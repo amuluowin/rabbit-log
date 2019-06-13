@@ -11,22 +11,28 @@ use rabbit\log\ConsoleColor;
  */
 class StyleTarget implements TargetInterface
 {
+    const COLOR_RANDOM = 'random';
+    const COLOR_DEFAULT = 'default';
+    const COLOR_LEVEL = 'level';
     /** @var ConsoleColor */
     private $color;
     /** @var array */
     private $colorTemplate = [
         'magenta',
-        'level',
-        'level',
+        self::COLOR_LEVEL,
+        self::COLOR_LEVEL,
         'dark_gray',
         'dark_gray',
+        self::COLOR_RANDOM,
+        self::COLOR_LEVEL,
         'dark_gray',
-        'level',
-        'dark_gray',
-        'level'
+        self::COLOR_LEVEL
     ];
 
+    /** @var string */
     private $splitColor = 'cyan';
+    /** @var array */
+    private $possibleStyles = [];
 
     /**
      * StyleTarget constructor.
@@ -34,6 +40,7 @@ class StyleTarget implements TargetInterface
     public function __construct(ConsoleColor $color)
     {
         $this->color = $color;
+        $this->possibleStyles = $color->getPossibleStyles();
     }
 
     /**
@@ -42,6 +49,12 @@ class StyleTarget implements TargetInterface
      */
     public function export(array $messages, bool $flush = true): void
     {
+        $randoms = [];
+        foreach ($this->colorTemplate as $index => $color) {
+            if ($color === self::COLOR_RANDOM) {
+                $randoms[$index] = $this->possibleStyles[rand(0, count($this->possibleStyles) - 1)];
+            }
+        }
         foreach ($messages as $message) {
             foreach ($message as $msg) {
                 $context = [];
@@ -50,11 +63,14 @@ class StyleTarget implements TargetInterface
                     if (isset($this->colorTemplate[$index])) {
                         $color = $this->colorTemplate[$index];
                         switch ($color) {
-                            case 'level':
+                            case self::COLOR_LEVEL:
                                 $context[] = $this->color->apply($this->getLevelColor($arrMsg[1]), $m);
                                 break;
-                            case 'default':
+                            case self::COLOR_DEFAULT:
                                 $context[] = $m;
+                                break;
+                            case self::COLOR_RANDOM:
+                                $context[] = $this->color->apply($randoms[$index], $m);
                                 break;
                             default:
                                 $context[] = $this->color->apply($color, $m);
