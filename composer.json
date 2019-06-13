@@ -1,0 +1,21 @@
+{
+  "name": "rabbit/log",
+  "description": "rabbit log",
+  "type": "library",
+  "require": {
+    "rabbit/framework": "dev-master",
+    "psr/log": "^1.0"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "albert",
+      "email": "63851587@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "rabbit\\log\\": "src/"
+    }
+  }
+}
