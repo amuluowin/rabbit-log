@@ -138,10 +138,10 @@ class LoggerConfig extends AbstractConfig
                     }
                     break;
                 case '%U':
-                    $msg[] = memory_get_usage(true);
+                    $msg[] = memory_get_usage();
                     break;
                 case '%u':
-                    $msg[] = memory_get_peak_usage(true);
+                    $msg[] = memory_get_peak_usage();
                     break;
             }
         }

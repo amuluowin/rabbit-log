@@ -35,6 +35,8 @@ class SeasStashTarget implements TargetInterface
                 $msg .= $module . '@' . $value . PHP_EOL;
             }
         }
-        $this->client->send($msg);
+        $connection = $this->clientPool->getConnection();
+        $connection->send($msg);
+        $connection->release();
     }
 }
