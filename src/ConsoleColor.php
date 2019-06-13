@@ -70,7 +70,7 @@ class ConsoleColor
      */
     public function __construct(bool $forceStyle = true)
     {
-        $this->forceStyle = forceStyle;
+        $this->forceStyle = $forceStyle;
         $this->isSupported = $this->isSupported();
     }
 
