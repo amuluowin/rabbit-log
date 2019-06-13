@@ -17,7 +17,7 @@ class LoggerConfig extends AbstractConfig
     /** @var string */
     protected $datetime_format = "Y-m-d H:i:s";
     /** @var int */
-    protected $recall_depth = 5;
+    protected $recall_depth = 0;
     /** @var array */
     protected $template;
     /** @var string */
@@ -80,7 +80,7 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = ArrayHelper::getValue($template, $tmp, -1);
                     break;
                 case '%L':
-                    $msg[] = $level;
+                    $msg[] = strtoupper($level);
                     break;
                 case '%M':
                     $msg[] = $message;
@@ -127,13 +127,13 @@ class LoggerConfig extends AbstractConfig
                     break;
                 case '%F':
                 case '%C':
-                    $trace = \Co::getBackTrace(CoroHelper::getId(), DEBUG_BACKTRACE_IGNORE_ARGS, $this->recall_depth);
-                    $this->recall_depth < 2 && $this->recall_depth = 2;
+                    $trace = \Co::getBackTrace(CoroHelper::getId(), DEBUG_BACKTRACE_IGNORE_ARGS,
+                        $this->recall_depth + 2);
                     if ($tmp === '%F') {
-                        $trace = $trace[$this->recall_depth - 2];
+                        $trace = $trace[$this->recall_depth];
                         $msg[] = $trace['file'] . ':' . $trace['line'];
                     } else {
-                        $trace = $trace[$this->recall_depth - 1];
+                        $trace = $trace[$this->recall_depth + 1];
                         $msg[] = $trace['class'] . $trace['type'] . $trace['function'];
                     }
                     break;
