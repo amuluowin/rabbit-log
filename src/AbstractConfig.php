@@ -3,6 +3,8 @@
 
 namespace rabbit\log;
 
+use rabbit\log\targets\TargetInterface;
+
 /**
  * Interface ConfigInterface
  * @package rabbit\log

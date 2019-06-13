@@ -6,14 +6,14 @@
  * Time: 16:38
  */
 
-namespace rabbit\log;
+namespace rabbit\log\targets;
 
 use rabbit\App;
 use rabbit\files\FileHelper;
 
 /**
  * Class FileTarget
- * @package rabbit\log
+ * @package rabbit\log\targets
  */
 class FileTarget implements TargetInterface
 {

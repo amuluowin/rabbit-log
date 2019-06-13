@@ -1,11 +1,11 @@
 <?php
 
 
-namespace rabbit\log;
+namespace rabbit\log\targets;
 
 /**
  * Interface TargetInterface
- * @package rabbit\log
+ * @package rabbit\log\targets
  */
 interface TargetInterface
 {
