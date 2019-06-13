@@ -32,7 +32,7 @@ class SeasStashTarget implements TargetInterface
         $msg = '';
         foreach ($messages as $module => $message) {
             foreach ($message as $value) {
-                $msg .= $module . '@' . $value . PHP_EOL;
+                $msg .= $module . '@' . str_replace(PHP_EOL, '', $value) . PHP_EOL;
             }
         }
         $connection = $this->clientPool->getConnection();
