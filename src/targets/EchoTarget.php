@@ -7,7 +7,7 @@ namespace rabbit\log\targets;
  * Class EchoTarget
  * @package rabbit\log\targets
  */
-class EchoTarget implements TargetInterface
+class EchoTarget extends AbstractTarget
 {
     /**
      * @param array $messages
@@ -16,7 +16,9 @@ class EchoTarget implements TargetInterface
     public function export(array $messages, bool $flush = true): void
     {
         foreach ($messages as $message) {
-            echo implode(PHP_EOL, $message) . PHP_EOL;
+            foreach ($message as $msg) {
+                echo implode($this->split, $msg) . PHP_EOL;
+            }
         }
     }
 }

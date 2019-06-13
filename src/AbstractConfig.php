@@ -3,7 +3,7 @@
 
 namespace rabbit\log;
 
-use rabbit\log\targets\TargetInterface;
+use rabbit\log\targets\AbstractTarget;
 
 /**
  * Interface ConfigInterface
@@ -15,7 +15,7 @@ abstract class AbstractConfig
     protected $bufferSize = 1;
     /** @var array */
     protected $buffer = [];
-    /** @var TargetInterface[] */
+    /** @var AbstractTarget[] */
     protected $targetList = [];
     /** @var int */
     protected $tick = 0;

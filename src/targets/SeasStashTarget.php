@@ -3,13 +3,14 @@
 
 namespace rabbit\log\targets;
 
+use rabbit\helper\ArrayHelper;
 use rabbit\socket\pool\SocketPool;
 
 /**
  * Class SeasStashTarget
  * @package rabbit\log\targets
  */
-class SeasStashTarget implements TargetInterface
+class SeasStashTarget extends AbstractTarget
 {
     /** @var SocketPool */
     private $clientPool;
@@ -29,14 +30,14 @@ class SeasStashTarget implements TargetInterface
      */
     public function export(array $messages, bool $flush = true): void
     {
-        $msg = '';
+        $connection = $this->clientPool->getConnection();
         foreach ($messages as $module => $message) {
             foreach ($message as $value) {
-                $msg .= $module . '@' . str_replace(PHP_EOL, '', $value) . PHP_EOL;
+                ArrayHelper::remove($value, '%c');
+                $msg = $module . '@' . str_replace(PHP_EOL, '', implode($this->split, $value)) . PHP_EOL;
+                $connection->send($msg);
             }
         }
-        $connection = $this->clientPool->getConnection();
-        $connection->send($msg);
         $connection->release();
     }
 }

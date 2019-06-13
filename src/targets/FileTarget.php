@@ -10,12 +10,13 @@ namespace rabbit\log\targets;
 
 use rabbit\App;
 use rabbit\files\FileHelper;
+use rabbit\helper\ArrayHelper;
 
 /**
  * Class FileTarget
  * @package rabbit\log\targets
  */
-class FileTarget implements TargetInterface
+class FileTarget extends AbstractTarget
 {
     /**
      * @var string
@@ -24,11 +25,11 @@ class FileTarget implements TargetInterface
     /**
      * @var bool
      */
-    private $enableRotation = true;
+    private $enableRotation = false;
     /**
      * @var int
      */
-    private $maxFileSize = 1024; // in KB
+    private $maxFileSize = 10240; // in KB
     /**
      * @var int
      */
@@ -98,20 +99,15 @@ class FileTarget implements TargetInterface
                     // this may result in rotating twice when cached file size is used on subsequent calls
                     clearstatcache();
                 }
-                $text = implode(PHP_EOL, $message) . PHP_EOL;
-                if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
-                    FileHelper::closeFile($file);
-                    $this->rotateFiles($file);
-                    $fp = FileHelper::openFile($file, 'a+');
-                }
-                $writeResult = @fwrite($fp, $text);
-                if ($writeResult === false) {
-                    $error = error_get_last();
-                    throw new \RuntimeException("Unable to export log through file!: {$error['message']}");
-                }
-                $textSize = strlen($text);
-                if ($writeResult < $textSize) {
-                    throw new \RuntimeException("Unable to export whole log through file! Wrote $writeResult out of $textSize bytes.");
+                foreach ($message as $msg) {
+                    ArrayHelper::remove($msg, '%c');
+                    $text = implode($this->split, $msg) . PHP_EOL;
+                    if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
+                        FileHelper::closeFile($file);
+                        $this->rotateFiles($file);
+                        $fp = FileHelper::openFile($file, 'a+');
+                    }
+                    @fwrite($fp, $text);
                 }
                 @flock($fp, LOCK_UN);
                 if ($this->fileMode !== null) {

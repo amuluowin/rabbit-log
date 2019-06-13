@@ -24,6 +24,25 @@ class LoggerConfig extends AbstractConfig
     protected $split = ' | ';
     /** @var int */
     protected $isMicrotime = 3;
+    /** @var array */
+    private static $supportTemplate = [
+        '%W',
+        '%L',
+        '%M',
+        '%T',
+        '%t',
+        '%Q',
+        '%H',
+        '%P',
+        '%D',
+        '%R',
+        '%m',
+        '%I',
+        '%F',
+        '%U',
+        '%u',
+        '%C'
+    ];
 
     /**
      * LoggerConfig constructor.
@@ -44,25 +63,13 @@ class LoggerConfig extends AbstractConfig
         $this->template = $template;
     }
 
-    /** @var array */
-    private static $supportTemplate = [
-        '%W',
-        '%L',
-        '%M',
-        '%T',
-        '%t',
-        '%Q',
-        '%H',
-        '%P',
-        '%D',
-        '%R',
-        '%m',
-        '%I',
-        '%F',
-        '%U',
-        '%u',
-        '%C',
-    ];
+    /**
+     * @return string
+     */
+    public function getSplit(): string
+    {
+        return $this->split;
+    }
 
     /**
      * @param string $level
@@ -145,9 +152,11 @@ class LoggerConfig extends AbstractConfig
                     break;
             }
         }
+        $color = ArrayHelper::getValue($template, '%c');
+        $color && $msg['%c'] = $color;
         $appName = getDI('appName', false, 'rabbit');
         $key = $appName . '_' . ArrayHelper::getValue($context, 'module', 'system');
-        $this->buffer[$key][] = implode($this->split, $msg);
+        $this->buffer[$key][] = $msg;
         $this->flush();
     }
 }
