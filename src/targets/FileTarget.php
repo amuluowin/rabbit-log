@@ -9,6 +9,8 @@
 namespace rabbit\log\targets;
 
 use rabbit\App;
+use rabbit\compool\ComPoolInterface;
+use rabbit\files\FileCom;
 use rabbit\files\FileHelper;
 use rabbit\helper\ArrayHelper;
 
@@ -25,7 +27,7 @@ class FileTarget extends AbstractTarget
     /**
      * @var bool
      */
-    private $enableRotation = false;
+    private $enableRotation = true;
     /**
      * @var int
      */
@@ -46,16 +48,10 @@ class FileTarget extends AbstractTarget
      * @var bool
      */
     private $rotateByCopy = true;
-    /** @var \Swoole\Atomic */
-    private $atomic;
-
-    /**
-     * FileTarget constructor.
-     */
-    public function __construct()
-    {
-        $this->atomic = new \Swoole\Atomic();
-    }
+    /** @var ComPoolInterface */
+    private $pool;
+    /** @var ComPoolInterface[] */
+    private $poolList = [];
 
     /**
      * @throws \rabbit\core\Exception
@@ -84,39 +80,46 @@ class FileTarget extends AbstractTarget
     public function export(array $messages, bool $flush = true): void
     {
         $fileInfo = pathinfo($this->logFile);
-        $group = waitGroup();
-        while ($this->atomic->get() !== 0) {
-            \Co::sleep(0.001);
-        }
-        $this->atomic->add();
         foreach ($messages as $module => $message) {
             $fileInfo['filename'] = $module;
             $file = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '.' . (isset($fileInfo['extension']) ? $fileInfo['extension'] : 'log');
-            $group->add(uniqid(), function () use ($file, $message) {
-                $fp = FileHelper::openFile($file, "a+");
+            $key = md5($file);
+            if (!isset($this->poolList[$key])) {
+                $pool = clone $this->pool;
+                $pool->getPoolConfig()->setConfig([
+                    'file' => $file,
+                    'option' => 'a+',
+                    'key' => 'file'
+                ]);
+                $this->poolList[$key] = $pool;
+            } else {
+                $pool = $this->poolList[$key];
+            }
+            rgo(function () use ($file, $message, $pool) {
+                /** @var FileCom $fileCom */
+                $fileCom = $pool->getCom();
                 if ($this->enableRotation) {
                     // clear stat cache to ensure getting the real current file size and not a cached one
                     // this may result in rotating twice when cached file size is used on subsequent calls
                     clearstatcache();
                 }
+                $text = '';
                 foreach ($message as $msg) {
                     ArrayHelper::remove($msg, '%c');
-                    $text = implode($this->split, $msg) . PHP_EOL;
+                    $text .= implode($this->split, $msg) . PHP_EOL;
+                }
+                $fileCom->lock(function () use ($text, $fileCom, $file) {
+                    $fileCom->write($text);
+                    $fileCom->release();
                     if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
-                        FileHelper::closeFile($file);
                         $this->rotateFiles($file);
-                        $fp = FileHelper::openFile($file, 'a+');
                     }
-                    @fwrite($fp, $text);
-                }
-                @flock($fp, LOCK_UN);
-                if ($this->fileMode !== null) {
-                    @chmod($file, $this->fileMode);
-                }
+                    if ($this->fileMode !== null) {
+                        @chmod($file, $this->fileMode);
+                    }
+                });
             });
         }
-        $group->wait(10 * 1000);
-        $this->atomic->sub();
     }
 
     /**

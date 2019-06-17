@@ -81,6 +81,9 @@ class ConsoleColor
      */
     public function apply($style, string $text): string
     {
+        if (empty($style)) {
+            return $text;
+        }
         if (!$this->isStyleForced() && !$this->isSupported()) {
             return $text;
         }

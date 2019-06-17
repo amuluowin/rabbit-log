@@ -3,6 +3,7 @@
 
 namespace rabbit\log;
 
+use rabbit\helper\ExceptionHelper;
 use rabbit\log\targets\AbstractTarget;
 
 /**
@@ -60,7 +61,12 @@ abstract class AbstractConfig
                     $target->export($buffer, $flush);
                 });
             }
-            $this->group->wait();
+            $result = $this->group->wait();
+            foreach ($result as $res) {
+                if ($res instanceof \Throwable) {
+                    print_r(ExceptionHelper::convertExceptionToArray($res));
+                }
+            }
             unset($buffer);
         }
     }
