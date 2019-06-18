@@ -240,7 +240,7 @@ class ConsoleColor
      * @param string $style
      * @return string
      */
-    private function styleSequence(string $style): string
+    private function styleSequence(string $style): ?string
     {
         if (array_key_exists($style, $this->styles)) {
             return $this->styles[$style];

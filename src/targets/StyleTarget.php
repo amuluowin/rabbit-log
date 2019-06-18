@@ -29,7 +29,7 @@ class StyleTarget extends AbstractTarget
         'dark_gray',
         self::COLOR_LEVEL
     ];
-
+    private $default = 'none';
     /** @var string */
     private $splitColor = 'cyan';
 
@@ -50,6 +50,13 @@ class StyleTarget extends AbstractTarget
         foreach ($messages as $message) {
             foreach ($message as $msg) {
                 $ranColor = ArrayHelper::remove($msg, '%c');
+                if (empty($ranColor)) {
+                    $ranColor = $this->default;
+                } elseif (is_array($ranColor) && count($ranColor) === 2) {
+                    $ranColor = $ranColor[0];
+                } else {
+                    $ranColor = $this->default;
+                }
                 foreach ($msg as $index => $m) {
                     if (isset($this->colorTemplate[$index])) {
                         $color = $this->colorTemplate[$index];
@@ -58,7 +65,7 @@ class StyleTarget extends AbstractTarget
                                 $context[] = $this->color->apply($this->getLevelColor($msg[1]), $m);
                                 break;
                             case self::COLOR_DEFAULT:
-                                $context[] = $m;
+                                $context[] = $this->color->apply($this->default, $m);
                                 break;
                             case self::COLOR_RANDOM:
                                 $context[] = $this->color->apply($ranColor, $m);
@@ -67,7 +74,7 @@ class StyleTarget extends AbstractTarget
                                 $context[] = $this->color->apply($color, $m);
                         }
                     } else {
-                        $context[] = $m;
+                        $context[] = $this->color->apply($this->default, $m);
                     }
                 }
                 echo implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL;
