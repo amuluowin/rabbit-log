@@ -96,7 +96,7 @@ class WebsocketTarget extends AbstractTarget
             case 'ERROR':
                 return "Red";
             case 'WARNING':
-                return 'GoldenRod';
+                return 'Yellow';
             default:
                 return 'DarkRed';
         }
