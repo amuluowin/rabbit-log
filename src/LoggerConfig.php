@@ -81,6 +81,7 @@ class LoggerConfig extends AbstractConfig
     {
         $msg = [];
         $template = Context::get(Logger::CONTEXT_KEY);
+        $template = $template ?? [];
         foreach ($this->template as $tmp) {
             switch ($tmp) {
                 case '%W':
