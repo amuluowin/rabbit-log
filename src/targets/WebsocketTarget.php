@@ -42,38 +42,38 @@ class WebsocketTarget extends AbstractTarget
     {
         $fdList = getClientList();
         $server = App::getServer();
-        foreach ($messages as $message) {
-            foreach ($message as $msg) {
-                $ranColor = ArrayHelper::remove($msg, '%c');
-                if (empty($ranColor)) {
-                    $ranColor = $this->default;
-                } elseif (is_array($ranColor) && count($ranColor) === 2) {
-                    $ranColor = $ranColor[1];
-                } else {
-                    $ranColor = $this->default;
-                }
-                foreach ($msg as $index => $m) {
-                    if (isset($this->colorTemplate[$index])) {
-                        $color = $this->colorTemplate[$index];
-                        switch ($color) {
-                            case self::COLOR_LEVEL:
-                                $colors[] = HtmlColor::getColor($this->getLevelColor($msg[1]));
-                                break;
-                            case self::COLOR_RANDOM:
-                                $colors[] = HtmlColor::getColor($ranColor);
-                                break;
-                            case self::COLOR_DEFAULT:
-                                $colors[] = $this->default;
-                                break;
-                            default:
-                                $colors[] = HtmlColor::getColor($color);
-                        }
+        foreach ($fdList as $fd) {
+            foreach ($messages as $message) {
+                foreach ($message as $msg) {
+                    $ranColor = ArrayHelper::remove($msg, '%c');
+                    if (empty($ranColor)) {
+                        $ranColor = $this->default;
+                    } elseif (is_array($ranColor) && count($ranColor) === 2) {
+                        $ranColor = $ranColor[1];
                     } else {
-                        $colors[] = $this->default;
+                        $ranColor = $this->default;
                     }
-                }
-                $msg = JsonHelper::encode([$msg, $colors]);
-                foreach ($fdList as $fd) {
+                    foreach ($msg as $index => $m) {
+                        if (isset($this->colorTemplate[$index])) {
+                            $color = $this->colorTemplate[$index];
+                            switch ($color) {
+                                case self::COLOR_LEVEL:
+                                    $colors[] = HtmlColor::getColor($this->getLevelColor($msg[1]));
+                                    break;
+                                case self::COLOR_RANDOM:
+                                    $colors[] = HtmlColor::getColor($ranColor);
+                                    break;
+                                case self::COLOR_DEFAULT:
+                                    $colors[] = $this->default;
+                                    break;
+                                default:
+                                    $colors[] = HtmlColor::getColor($color);
+                            }
+                        } else {
+                            $colors[] = $this->default;
+                        }
+                    }
+                    $msg = JsonHelper::encode([$msg, $colors]);
                     rgo(function () use ($server, $fd, $msg) {
                         $server->isEstablished($fd) && $server->push($fd, $msg);
                     });
