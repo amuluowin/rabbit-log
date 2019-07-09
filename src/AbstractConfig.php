@@ -3,7 +3,6 @@
 
 namespace rabbit\log;
 
-use rabbit\helper\ExceptionHelper;
 use rabbit\log\targets\AbstractTarget;
 
 /**
@@ -21,8 +20,6 @@ abstract class AbstractConfig
     /** @var int */
     protected $tick = 0;
 
-    protected $group;
-
     /**
      * AbstractConfig constructor.
      * @param array $target
@@ -30,7 +27,6 @@ abstract class AbstractConfig
     public function __construct(array $target)
     {
         $this->targetList = $target;
-        $this->group = waitGroup();
     }
 
     /**
@@ -57,17 +53,10 @@ abstract class AbstractConfig
             $buffer = $this->buffer;
             $this->buffer = [];
             foreach ($this->targetList as $index => $target) {
-                $this->group->add($index, function () use ($target, $buffer, $flush) {
+                rgo(function () use ($target, $buffer, $flush) {
                     $target->export($buffer, $flush);
                 });
             }
-            $result = $this->group->wait();
-            foreach ($result as $res) {
-                if ($res instanceof \Throwable) {
-                    print_r(ExceptionHelper::convertExceptionToArray($res));
-                }
-            }
-            unset($buffer);
         }
     }
 }
