@@ -91,7 +91,7 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = strtoupper($level);
                     break;
                 case '%M':
-                    $msg[] = $message;
+                    $msg[] = str_replace($this->split, ' ', $message);
                     break;
                 case '%T':
                 case '%t':
