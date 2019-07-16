@@ -5,6 +5,7 @@ namespace rabbit\log\targets;
 
 use rabbit\helper\ArrayHelper;
 use rabbit\socket\pool\SocketPool;
+use rabbit\socket\tcp\AbstractTcpConnection;
 
 /**
  * Class SeasStashTarget
@@ -30,6 +31,7 @@ class SeasStashTarget extends AbstractTarget
      */
     public function export(array $messages, bool $flush = true): void
     {
+        /** @var AbstractTcpConnection $connection */
         $connection = $this->clientPool->getConnection();
         foreach ($messages as $module => $message) {
             foreach ($message as $value) {
