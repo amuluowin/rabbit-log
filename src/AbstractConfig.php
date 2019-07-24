@@ -50,13 +50,12 @@ abstract class AbstractConfig
     public function flush(bool $flush = false): void
     {
         if (!empty($this->buffer) && $flush || ($this->bufferSize !== 0 && $this->bufferSize <= count($this->buffer))) {
-            $buffer = $this->buffer;
-            $this->buffer = [];
             foreach ($this->targetList as $index => $target) {
-                rgo(function () use ($target, $buffer, $flush) {
-                    $target->export($buffer, $flush);
+                rgo(function () use ($target, $flush) {
+                    $target->export($this->buffer, $flush);
                 });
             }
+            unset($this->buffer);
         }
     }
 }
