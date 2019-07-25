@@ -55,7 +55,7 @@ abstract class AbstractConfig
                     $target->export($this->buffer, $flush);
                 });
             }
-            unset($this->buffer);
+            array_splice($this->buffer, 0);
         }
     }
 }
