@@ -46,7 +46,7 @@ class Logger implements LoggerInterface
      */
     public function emergency($message, array $context = array())
     {
-        $this->config->log('emergency', $message, $context);
+        $this->log('emergency', $message, $context);
     }
 
     /**
@@ -62,7 +62,7 @@ class Logger implements LoggerInterface
      */
     public function alert($message, array $context = array())
     {
-        $this->config->log('alert', $message, $context);
+        $this->log('alert', $message, $context);
     }
 
     /**
@@ -77,7 +77,7 @@ class Logger implements LoggerInterface
      */
     public function critical($message, array $context = array())
     {
-        $this->config->log('critical', $message, $context);
+        $this->log('critical', $message, $context);
     }
 
     /**
@@ -91,7 +91,7 @@ class Logger implements LoggerInterface
      */
     public function error($message, array $context = array())
     {
-        $this->config->log('error', $message, $context);
+        $this->log('error', $message, $context);
     }
 
     /**
@@ -107,7 +107,7 @@ class Logger implements LoggerInterface
      */
     public function warning($message, array $context = array())
     {
-        $this->config->log('warning', $message, $context);
+        $this->log('warning', $message, $context);
     }
 
     /**
@@ -120,7 +120,7 @@ class Logger implements LoggerInterface
      */
     public function notice($message, array $context = array())
     {
-        $this->config->log('notice', $message, $context);
+        $this->log('notice', $message, $context);
     }
 
     /**
@@ -135,7 +135,7 @@ class Logger implements LoggerInterface
      */
     public function info($message, array $context = array())
     {
-        $this->config->log('info', $message, $context);
+        $this->log('info', $message, $context);
     }
 
     /**
@@ -148,7 +148,7 @@ class Logger implements LoggerInterface
      */
     public function debug($message, array $context = array())
     {
-        $this->config->log('debug', $message, $context);
+        $this->log('debug', $message, $context);
     }
 
     /**
