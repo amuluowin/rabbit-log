@@ -14,6 +14,8 @@ use rabbit\helper\CoroHelper;
  */
 class LoggerConfig extends AbstractConfig
 {
+    /** @var array */
+    protected $buffer = [];
     /** @var string */
     protected $datetime_format = "Y-m-d H:i:s";
     /** @var int */
@@ -24,6 +26,8 @@ class LoggerConfig extends AbstractConfig
     protected $split = ' | ';
     /** @var int */
     protected $isMicrotime = 3;
+    /** @var string */
+    private $appName = 'Rabbit';
     /** @var array */
     private static $supportTemplate = [
         '%W',
@@ -61,6 +65,7 @@ class LoggerConfig extends AbstractConfig
             }
         }
         $this->template = $template;
+        $this->appName = getDI('appName', false, 'Rabbit');
     }
 
     /**
@@ -155,9 +160,23 @@ class LoggerConfig extends AbstractConfig
         }
         $color = ArrayHelper::getValue($template, '%c');
         $color && $msg['%c'] = $color;
-        $appName = getDI('appName', false, 'rabbit');
-        $key = $appName . '_' . ArrayHelper::getValue($context, 'module', 'system');
+        $key = $this->appName . '_' . ArrayHelper::getValue($context, 'module', 'system');
         $this->buffer[$key][] = $msg;
         $this->flush();
+    }
+
+    /**
+     * @param bool $flush
+     */
+    public function flush(bool $flush = false): void
+    {
+        if (!empty($this->buffer) && $flush || ($this->bufferSize !== 0 && $this->bufferSize <= count($this->buffer))) {
+            foreach ($this->targetList as $index => $target) {
+                rgo(function () use ($target, $flush) {
+                    $target->export($this->buffer, $flush);
+                });
+            }
+            array_splice($this->buffer, 0);
+        }
     }
 }

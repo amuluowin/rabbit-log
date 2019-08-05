@@ -10,7 +10,7 @@ namespace rabbit\log\targets;
 abstract class AbstractTarget
 {
     /** @var string */
-    protected $split = ' | ';
+    protected $split = '|';
 
     /**
      * AbstractTarget constructor.

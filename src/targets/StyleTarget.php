@@ -4,6 +4,7 @@
 namespace rabbit\log\targets;
 
 use rabbit\helper\ArrayHelper;
+use rabbit\helper\StringHelper;
 use rabbit\log\ConsoleColor;
 
 /**
@@ -49,7 +50,18 @@ class StyleTarget extends AbstractTarget
     {
         foreach ($messages as $message) {
             foreach ($message as $msg) {
-                $ranColor = ArrayHelper::remove($msg, '%c');
+                if (is_string($msg)) {
+                    switch (ini_get('seaslog.appender')) {
+                        case '2':
+                        case '3':
+                            $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
+                            break;
+                    }
+                    $msg = explode($this->split, $msg);
+                    $ranColor = $this->default;
+                } else {
+                    $ranColor = ArrayHelper::remove($msg, '%c');
+                }
                 if (empty($ranColor)) {
                     $ranColor = $this->default;
                 } elseif (is_array($ranColor) && count($ranColor) === 2) {
@@ -60,9 +72,11 @@ class StyleTarget extends AbstractTarget
                 foreach ($msg as $index => $m) {
                     if (isset($this->colorTemplate[$index])) {
                         $color = $this->colorTemplate[$index];
+                        $m = trim($m);
+                        $level = trim($msg[1]);
                         switch ($color) {
                             case self::COLOR_LEVEL:
-                                $context[] = $this->color->apply($this->getLevelColor($msg[1]), $m);
+                                $context[] = $this->color->apply($this->getLevelColor($level), $m);
                                 break;
                             case self::COLOR_DEFAULT:
                                 $context[] = $this->color->apply($this->default, $m);

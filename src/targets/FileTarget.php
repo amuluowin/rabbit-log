@@ -13,6 +13,7 @@ use rabbit\compool\ComPoolInterface;
 use rabbit\files\FileCom;
 use rabbit\files\FileHelper;
 use rabbit\helper\ArrayHelper;
+use rabbit\helper\StringHelper;
 
 /**
  * Class FileTarget
@@ -81,8 +82,12 @@ class FileTarget extends AbstractTarget
     {
         $fileInfo = pathinfo($this->logFile);
         foreach ($messages as $module => $message) {
-            $fileInfo['filename'] = $module;
-            $file = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '.' . (isset($fileInfo['extension']) ? $fileInfo['extension'] : 'log');
+            if (!empty(pathinfo($module, PATHINFO_EXTENSION))) {
+                $file = $module;
+            } else {
+                $fileInfo['filename'] = $module;
+                $file = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '.' . (isset($fileInfo['extension']) ? $fileInfo['extension'] : 'log');
+            }
             $key = md5($file);
             if (!isset($this->poolList[$key])) {
                 $pool = clone $this->pool;
@@ -105,8 +110,18 @@ class FileTarget extends AbstractTarget
                 }
                 $text = '';
                 foreach ($message as $msg) {
-                    ArrayHelper::remove($msg, '%c');
-                    $text .= implode($this->split, $msg) . PHP_EOL;
+                    if (is_string($msg)) {
+                        switch (ini_get('seaslog.appender')) {
+                            case '2':
+                            case '3':
+                                $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
+                                break;
+                        }
+                        $text .= $msg . PHP_EOL;
+                    } else {
+                        ArrayHelper::remove($msg, '%c');
+                        $text .= implode($this->split, $msg) . PHP_EOL;
+                    }
                 }
                 $fileCom->lock(function () use ($text, $fileCom, $file) {
                     $fileCom->write($text);

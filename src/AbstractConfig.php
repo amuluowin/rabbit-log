@@ -13,8 +13,6 @@ abstract class AbstractConfig
 {
     /** @var int */
     protected $bufferSize = 1;
-    /** @var array */
-    protected $buffer = [];
     /** @var AbstractTarget[] */
     protected $targetList = [];
     /** @var int */
@@ -47,15 +45,5 @@ abstract class AbstractConfig
     /**
      * @param bool $flush
      */
-    public function flush(bool $flush = false): void
-    {
-        if (!empty($this->buffer) && $flush || ($this->bufferSize !== 0 && $this->bufferSize <= count($this->buffer))) {
-            foreach ($this->targetList as $index => $target) {
-                rgo(function () use ($target, $flush) {
-                    $target->export($this->buffer, $flush);
-                });
-            }
-            array_splice($this->buffer, 0);
-        }
-    }
+    abstract public function flush(bool $flush = false): void;
 }

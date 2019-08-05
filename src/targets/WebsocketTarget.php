@@ -6,6 +6,7 @@ namespace rabbit\log\targets;
 use rabbit\App;
 use rabbit\helper\ArrayHelper;
 use rabbit\helper\JsonHelper;
+use rabbit\helper\StringHelper;
 use rabbit\log\HtmlColor;
 
 /**
@@ -45,7 +46,18 @@ class WebsocketTarget extends AbstractTarget
         foreach ($fdList as $fd) {
             foreach ($messages as $message) {
                 foreach ($message as $msg) {
-                    $ranColor = ArrayHelper::remove($msg, '%c');
+                    if (is_string($msg)) {
+                        switch (ini_get('seaslog.appender')) {
+                            case '2':
+                            case '3':
+                                $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
+                                break;
+                        }
+                        $msg = explode($this->split, $msg);
+                        $ranColor = $this->default;
+                    } else {
+                        $ranColor = ArrayHelper::remove($msg, '%c');
+                    }
                     if (empty($ranColor)) {
                         $ranColor = $this->default;
                     } elseif (is_array($ranColor) && count($ranColor) === 2) {
@@ -54,11 +66,13 @@ class WebsocketTarget extends AbstractTarget
                         $ranColor = $this->default;
                     }
                     foreach ($msg as $index => $m) {
+                        $msg[$index] = trim($m);
                         if (isset($this->colorTemplate[$index])) {
                             $color = $this->colorTemplate[$index];
+                            $level = trim($msg[1]);
                             switch ($color) {
                                 case self::COLOR_LEVEL:
-                                    $colors[] = HtmlColor::getColor($this->getLevelColor($msg[1]));
+                                    $colors[] = HtmlColor::getColor($this->getLevelColor($level));
                                     break;
                                 case self::COLOR_RANDOM:
                                     $colors[] = HtmlColor::getColor($ranColor);

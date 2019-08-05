@@ -17,7 +17,11 @@ class EchoTarget extends AbstractTarget
     {
         foreach ($messages as $message) {
             foreach ($message as $msg) {
-                echo implode($this->split, $msg) . PHP_EOL;
+                if (is_string($msg)) {
+                    echo $msg;
+                } else {
+                    echo implode($this->split, $msg) . PHP_EOL;
+                }
             }
         }
     }
