@@ -5,6 +5,7 @@ namespace rabbit\log;
 
 
 use Psr\Log\LoggerInterface;
+use rabbit\contract\InitInterface;
 
 /**
  * Class Logger
@@ -26,6 +27,9 @@ class Logger implements LoggerInterface
     public function __construct(AbstractConfig $config)
     {
         $this->config = $config;
+        if ($this->config instanceof InitInterface) {
+            $this->config->init();
+        }
     }
 
     /**

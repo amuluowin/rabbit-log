@@ -10,7 +10,7 @@ namespace rabbit\log\targets;
 abstract class AbstractTarget
 {
     /** @var string */
-    protected $split = '|';
+    protected $split = ' | ';
     /** @var array */
     protected $levelList = [];
     /** @var int */
@@ -20,7 +20,7 @@ abstract class AbstractTarget
      * AbstractTarget constructor.
      * @param string $split
      */
-    public function __construct(string $split = '|')
+    public function __construct(string $split = ' | ')
     {
         $this->split = $split;
     }

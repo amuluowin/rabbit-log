@@ -18,8 +18,6 @@ class LoggerConfig extends AbstractConfig
     protected $buffer = [];
     /** @var string */
     protected $datetime_format = "Y-m-d H:i:s";
-    /** @var int */
-    protected $recall_depth = 0;
     /** @var array */
     protected $template;
     /** @var string */

@@ -17,6 +17,8 @@ abstract class AbstractConfig
     protected $targetList = [];
     /** @var int */
     protected $tick = 0;
+    /** @var int */
+    protected $recall_depth = 0;
 
     /**
      * AbstractConfig constructor.

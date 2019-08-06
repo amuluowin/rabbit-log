@@ -3,13 +3,14 @@
 
 namespace rabbit\log;
 
+use rabbit\contract\InitInterface;
 use rabbit\core\Context;
 
 /**
  * Class SeaslogConfig
  * @package rabbit\log
  */
-class SeaslogConfig extends AbstractConfig
+class SeaslogConfig extends AbstractConfig implements InitInterface
 {
     /** @var string */
     private $appName = 'Rabbit';
@@ -26,6 +27,11 @@ class SeaslogConfig extends AbstractConfig
         parent::__construct($target);
         $this->appName = getDI('appName', false, 'Rabbit');
         $this->logger = new \Seaslog();
+    }
+
+    public function init()
+    {
+        ini_set('seaslog.recall_depth', $this->recall_depth);
     }
 
     /**
