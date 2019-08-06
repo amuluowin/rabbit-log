@@ -11,6 +11,10 @@ abstract class AbstractTarget
 {
     /** @var string */
     protected $split = '|';
+    /** @var array */
+    protected $levelList = [];
+    /** @var int */
+    protected $levelIndex = 1;
 
     /**
      * AbstractTarget constructor.

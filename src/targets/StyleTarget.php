@@ -57,10 +57,13 @@ class StyleTarget extends AbstractTarget
                             $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
                             break;
                     }
-                    $msg = explode($this->split, $msg);
+                    $msg = explode($this->split, trim($msg));
                     $ranColor = $this->default;
                 } else {
                     $ranColor = ArrayHelper::remove($msg, '%c');
+                }
+                if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                    continue;
                 }
                 if (empty($ranColor)) {
                     $ranColor = $this->default;

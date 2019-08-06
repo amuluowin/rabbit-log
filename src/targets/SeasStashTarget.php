@@ -47,11 +47,13 @@ class SeasStashTarget extends AbstractTarget
                             $fileName = basename($module);
                             $module = strsub($fileName, 0, strpos($fileName, '_', -1));
                     }
-                    $msg = $module . '@' . $msg . PHP_EOL;
-                } else {
-                    ArrayHelper::remove($msg, '%c');
-                    $msg = $module . '@' . str_replace(PHP_EOL, '', implode($this->split, $msg)) . PHP_EOL;
+                    $msg = explode($this->split, trim($msg));
                 }
+                if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                    continue;
+                }
+                ArrayHelper::remove($msg, '%c');
+                $msg = $module . '@' . str_replace(PHP_EOL, '', implode($this->split, $msg)) . PHP_EOL;
                 $connection->send($msg);
             }
         }

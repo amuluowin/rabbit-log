@@ -117,13 +117,15 @@ class FileTarget extends AbstractTarget
                                 $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
                                 break;
                         }
-                        $text .= $msg . PHP_EOL;
-                    } else {
-                        ArrayHelper::remove($msg, '%c');
-                        $text .= implode($this->split, $msg) . PHP_EOL;
+                        $msg = explode($this->split, trim($msg));
                     }
+                    if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                        continue;
+                    }
+                    ArrayHelper::remove($msg, '%c');
+                    $text .= implode($this->split, $msg) . PHP_EOL;
                 }
-                $fileCom->lock(function () use ($text, $fileCom, $file) {
+                !empty($text) && $fileCom->lock(function () use ($text, $fileCom, $file) {
                     $fileCom->write($text);
                     $fileCom->release();
                     if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {

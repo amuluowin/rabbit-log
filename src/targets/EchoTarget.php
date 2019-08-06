@@ -18,10 +18,12 @@ class EchoTarget extends AbstractTarget
         foreach ($messages as $message) {
             foreach ($message as $msg) {
                 if (is_string($msg)) {
-                    echo $msg;
-                } else {
-                    echo implode($this->split, $msg) . PHP_EOL;
+                    $msg = explode($this->split, trim($msg));
                 }
+                if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                    continue;
+                }
+                echo implode($this->split, $msg) . PHP_EOL;
             }
         }
     }
