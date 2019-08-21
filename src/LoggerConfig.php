@@ -26,6 +26,8 @@ class LoggerConfig extends AbstractConfig
     protected $isMicrotime = 3;
     /** @var string */
     private $appName = 'Rabbit';
+    /** @var bool */
+    protected $useBasename = true;
     /** @var array */
     private static $supportTemplate = [
         '%W',
@@ -142,7 +144,7 @@ class LoggerConfig extends AbstractConfig
                         $this->recall_depth + 2);
                     if ($tmp === '%F') {
                         $trace = $trace[$this->recall_depth];
-                        $msg[] = $trace['file'] . ':' . $trace['line'];
+                        $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] : $trace['file'] . ':' . $trace['line'];
                     } else {
                         $trace = $trace[$this->recall_depth + 1];
                         $msg[] = $trace['class'] . $trace['type'] . $trace['function'];
