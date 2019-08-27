@@ -8,6 +8,7 @@ use rabbit\helper\ArrayHelper;
 use rabbit\helper\JsonHelper;
 use rabbit\helper\StringHelper;
 use rabbit\log\HtmlColor;
+use rabbit\wsserver\Server;
 
 /**
  * Class WebsocketTarget
@@ -33,6 +34,8 @@ class WebsocketTarget extends AbstractTarget
     ];
     /** @var string */
     private $default = 'LightGray';
+    /** @var string */
+    private $route = '/logs';
 
     /**
      * @param array $messages
@@ -41,59 +44,67 @@ class WebsocketTarget extends AbstractTarget
      */
     public function export(array $messages, bool $flush = true): void
     {
-        $fdList = getClientList();
         $server = App::getServer();
-        foreach ($fdList as $fd) {
-            foreach ($messages as $message) {
-                foreach ($message as $msg) {
-                    if (is_string($msg)) {
-                        switch (ini_get('seaslog.appender')) {
-                            case '2':
-                            case '3':
-                                $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
-                                break;
-                        }
-                        $msg = explode($this->split, trim($msg));
-                        $ranColor = $this->default;
-                    } else {
-                        $ranColor = ArrayHelper::remove($msg, '%c');
-                    }
-                    if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
-                        continue;
-                    }
-                    if (empty($ranColor)) {
-                        $ranColor = $this->default;
-                    } elseif (is_array($ranColor) && count($ranColor) === 2) {
-                        $ranColor = $ranColor[1];
-                    } else {
-                        $ranColor = $this->default;
-                    }
-                    foreach ($msg as $index => $m) {
-                        $msg[$index] = trim($m);
-                        if (isset($this->colorTemplate[$index])) {
-                            $color = $this->colorTemplate[$index];
-                            $level = trim($msg[1]);
-                            switch ($color) {
-                                case self::COLOR_LEVEL:
-                                    $colors[] = HtmlColor::getColor($this->getLevelColor($level));
+        if (!$server) {
+            return;
+        }
+        $table = $server->getTable();
+        /** @var Server $swooleServer */
+        $swooleServer = $server->getSwooleServer();
+        foreach ($swooleServer->connections as $fd) {
+            if ($table->exist($fd) && $table->get($fd,
+                    'path') === $this->route && $swooleServer->isEstablished($fd)) {
+                foreach ($messages as $message) {
+                    foreach ($message as $msg) {
+                        if (is_string($msg)) {
+                            switch (ini_get('seaslog.appender')) {
+                                case '2':
+                                case '3':
+                                    $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
                                     break;
-                                case self::COLOR_RANDOM:
-                                    $colors[] = HtmlColor::getColor($ranColor);
-                                    break;
-                                case self::COLOR_DEFAULT:
-                                    $colors[] = $this->default;
-                                    break;
-                                default:
-                                    $colors[] = HtmlColor::getColor($color);
                             }
+                            $msg = explode($this->split, trim($msg));
+                            $ranColor = $this->default;
                         } else {
-                            $colors[] = $this->default;
+                            $ranColor = ArrayHelper::remove($msg, '%c');
                         }
+                        if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                            continue;
+                        }
+                        if (empty($ranColor)) {
+                            $ranColor = $this->default;
+                        } elseif (is_array($ranColor) && count($ranColor) === 2) {
+                            $ranColor = $ranColor[1];
+                        } else {
+                            $ranColor = $this->default;
+                        }
+                        foreach ($msg as $index => $m) {
+                            $msg[$index] = trim($m);
+                            if (isset($this->colorTemplate[$index])) {
+                                $color = $this->colorTemplate[$index];
+                                $level = trim($msg[1]);
+                                switch ($color) {
+                                    case self::COLOR_LEVEL:
+                                        $colors[] = HtmlColor::getColor($this->getLevelColor($level));
+                                        break;
+                                    case self::COLOR_RANDOM:
+                                        $colors[] = HtmlColor::getColor($ranColor);
+                                        break;
+                                    case self::COLOR_DEFAULT:
+                                        $colors[] = $this->default;
+                                        break;
+                                    default:
+                                        $colors[] = HtmlColor::getColor($color);
+                                }
+                            } else {
+                                $colors[] = $this->default;
+                            }
+                        }
+                        $msg = JsonHelper::encode([$msg, $colors]);
+                        rgo(function () use ($swooleServer, $fd, $msg) {
+                            $swooleServer->push($fd, $msg);
+                        });
                     }
-                    $msg = JsonHelper::encode([$msg, $colors]);
-                    rgo(function () use ($server, $fd, $msg) {
-                        $server->isEstablished($fd) && $server->push($fd, $msg);
-                    });
                 }
             }
         }
