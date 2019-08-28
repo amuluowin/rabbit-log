@@ -3,6 +3,7 @@
 
 namespace rabbit\log\targets;
 
+use Psr\Log\LogLevel;
 use rabbit\App;
 use rabbit\helper\ArrayHelper;
 use rabbit\helper\StringHelper;
@@ -67,7 +68,7 @@ class WebsocketTarget extends AbstractTarget
                         } else {
                             $ranColor = ArrayHelper::remove($msg, '%c');
                         }
-                        if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                        if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
                             continue;
                         }
                         if (empty($ranColor)) {
@@ -81,7 +82,7 @@ class WebsocketTarget extends AbstractTarget
                             $msg[$index] = trim($m);
                             if (isset($this->colorTemplate[$index])) {
                                 $color = $this->colorTemplate[$index];
-                                $level = trim($msg[1]);
+                                $level = trim($msg[$this->levelIndex]);
                                 switch ($color) {
                                     case self::COLOR_LEVEL:
                                         $colors[] = HtmlColor::getColor($this->getLevelColor($level));
@@ -115,17 +116,17 @@ class WebsocketTarget extends AbstractTarget
      */
     private function getLevelColor(string $level): string
     {
-        switch ($level) {
-            case 'INFO':
-                return "Green";
-            case 'DEBUG':
-                return 'DarkGray';
-            case 'ERROR':
-                return "Red";
-            case 'WARNING':
-                return 'Yellow';
+        switch (strtolower($level)) {
+            case LogLevel::INFO:
+                return "green";
+            case LogLevel::DEBUG:
+                return 'dark_gray';
+            case LogLevel::ERROR:
+                return "red";
+            case LogLevel::WARNING:
+                return 'yellow';
             default:
-                return 'DarkRed';
+                return 'light_red';
         }
     }
 

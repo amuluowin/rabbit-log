@@ -3,6 +3,7 @@
 
 namespace rabbit\log\targets;
 
+use Psr\Log\LogLevel;
 use rabbit\helper\ArrayHelper;
 use rabbit\helper\StringHelper;
 use rabbit\log\ConsoleColor;
@@ -62,7 +63,7 @@ class StyleTarget extends AbstractTarget
                 } else {
                     $ranColor = ArrayHelper::remove($msg, '%c');
                 }
-                if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
                     continue;
                 }
                 if (empty($ranColor)) {
@@ -76,7 +77,7 @@ class StyleTarget extends AbstractTarget
                     if (isset($this->colorTemplate[$index])) {
                         $color = $this->colorTemplate[$index];
                         $m = trim($m);
-                        $level = trim($msg[1]);
+                        $level = trim($msg[$this->levelIndex]);
                         switch ($color) {
                             case self::COLOR_LEVEL:
                                 $context[] = $this->color->apply($this->getLevelColor($level), $m);
@@ -105,14 +106,14 @@ class StyleTarget extends AbstractTarget
      */
     private function getLevelColor(string $level): string
     {
-        switch ($level) {
-            case 'INFO':
+        switch (strtolower($level)) {
+            case LogLevel::INFO:
                 return "green";
-            case 'DEBUG':
+            case LogLevel::DEBUG:
                 return 'dark_gray';
-            case 'ERROR':
+            case LogLevel::ERROR:
                 return "red";
-            case 'WARNING':
+            case LogLevel::WARNING:
                 return 'yellow';
             default:
                 return 'light_red';

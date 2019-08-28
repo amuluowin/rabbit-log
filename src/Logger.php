@@ -5,6 +5,7 @@ namespace rabbit\log;
 
 
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use rabbit\contract\InitInterface;
 
 /**
@@ -50,7 +51,7 @@ class Logger implements LoggerInterface
      */
     public function emergency($message, array $context = array())
     {
-        $this->log('emergency', $message, $context);
+        $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
     /**
@@ -66,7 +67,7 @@ class Logger implements LoggerInterface
      */
     public function alert($message, array $context = array())
     {
-        $this->log('alert', $message, $context);
+        $this->log(LogLevel::ALERT, $message, $context);
     }
 
     /**
@@ -81,7 +82,7 @@ class Logger implements LoggerInterface
      */
     public function critical($message, array $context = array())
     {
-        $this->log('critical', $message, $context);
+        $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
     /**
@@ -95,7 +96,7 @@ class Logger implements LoggerInterface
      */
     public function error($message, array $context = array())
     {
-        $this->log('error', $message, $context);
+        $this->log(LogLevel::ERROR, $message, $context);
     }
 
     /**
@@ -111,7 +112,7 @@ class Logger implements LoggerInterface
      */
     public function warning($message, array $context = array())
     {
-        $this->log('warning', $message, $context);
+        $this->log(LogLevel::WARNING, $message, $context);
     }
 
     /**
@@ -124,7 +125,7 @@ class Logger implements LoggerInterface
      */
     public function notice($message, array $context = array())
     {
-        $this->log('notice', $message, $context);
+        $this->log(LogLevel::NOTICE, $message, $context);
     }
 
     /**
@@ -139,7 +140,7 @@ class Logger implements LoggerInterface
      */
     public function info($message, array $context = array())
     {
-        $this->log('info', $message, $context);
+        $this->log(LogLevel::INFO, $message, $context);
     }
 
     /**
@@ -152,7 +153,7 @@ class Logger implements LoggerInterface
      */
     public function debug($message, array $context = array())
     {
-        $this->log('debug', $message, $context);
+        $this->log(LogLevel::DEBUG, $message, $context);
     }
 
     /**

@@ -119,7 +119,7 @@ class FileTarget extends AbstractTarget
                         }
                         $msg = explode($this->split, trim($msg));
                     }
-                    if (!empty($this->levelList) && !in_array($msg[$this->levelIndex], $this->levelList)) {
+                    if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
                         continue;
                     }
                     ArrayHelper::remove($msg, '%c');

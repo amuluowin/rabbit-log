@@ -93,7 +93,7 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = ArrayHelper::getValue($template, $tmp, -1);
                     break;
                 case '%L':
-                    $msg[] = strtoupper($level);
+                    $msg[] = $level;
                     break;
                 case '%M':
                     $msg[] = str_replace($this->split, ' ', $message);
