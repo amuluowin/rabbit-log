@@ -110,9 +110,9 @@ class LoggerConfig extends AbstractConfig
                         $milliseconds = 0;
                     }
                     if ($tmp === '%T') {
-                        $msg[] = date($this->datetime_format, $timestamp) . '.' . $milliseconds;
+                        $msg[] = date($this->datetime_format, (int)$timestamp) . '.' . (int)$milliseconds;
                     } else {
-                        $msg[] = date($this->datetime_format, $timestamp);
+                        $msg[] = date($this->datetime_format, (int)$timestamp);
                     }
                     break;
                 case '%Q':

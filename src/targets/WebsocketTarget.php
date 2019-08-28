@@ -5,7 +5,6 @@ namespace rabbit\log\targets;
 
 use rabbit\App;
 use rabbit\helper\ArrayHelper;
-use rabbit\helper\JsonHelper;
 use rabbit\helper\StringHelper;
 use rabbit\log\HtmlColor;
 use rabbit\wsserver\Server;
@@ -100,7 +99,7 @@ class WebsocketTarget extends AbstractTarget
                                 $colors[] = $this->default;
                             }
                         }
-                        $msg = JsonHelper::encode([$msg, $colors]);
+                        $msg = json_encode([$msg, $colors], JSON_UNESCAPED_UNICODE);
                         rgo(function () use ($swooleServer, $fd, $msg) {
                             $swooleServer->push($fd, $msg);
                         });

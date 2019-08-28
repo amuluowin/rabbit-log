@@ -45,7 +45,7 @@ class SeasStashTarget extends AbstractTarget
                         case '1':
                         default:
                             $fileName = basename($module);
-                            $module = strsub($fileName, 0, strpos($fileName, '_', -1));
+                            $module = substr($fileName, 0, strpos($fileName, '_', -1));
                     }
                     $msg = explode($this->split, trim($msg));
                 }
