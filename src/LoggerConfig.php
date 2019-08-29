@@ -3,7 +3,6 @@
 
 namespace rabbit\log;
 
-use rabbit\core\Context;
 use rabbit\exception\InvalidConfigException;
 use rabbit\helper\ArrayHelper;
 use rabbit\helper\CoroHelper;
@@ -56,9 +55,10 @@ class LoggerConfig extends AbstractConfig
      */
     public function __construct(
         array $target,
+        float $tick = 0,
         array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
     ) {
-        parent::__construct($target);
+        parent::__construct($target, $tick);
         foreach ($template as $tmp) {
             if (!in_array($tmp, self::$supportTemplate)) {
                 throw new InvalidConfigException("$tmp not supported!");
@@ -84,9 +84,8 @@ class LoggerConfig extends AbstractConfig
      */
     public function log(string $level, string $message, array $context = []): void
     {
+        $template = $this->beforeLog();
         $msg = [];
-        $template = Context::get(Logger::CONTEXT_KEY);
-        $template = $template ?? [];
         foreach ($this->template as $tmp) {
             switch ($tmp) {
                 case '%W':

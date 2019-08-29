@@ -19,22 +19,44 @@ abstract class AbstractConfig
     protected $tick = 0;
     /** @var int */
     protected $recall_depth = 0;
+    /** @var callable */
+    protected $getTemplate;
 
     /**
      * AbstractConfig constructor.
      * @param array $target
      */
-    public function __construct(array $target)
+    public function __construct(array $target, float $tick = 0)
     {
         $this->targetList = $target;
+        $this->tick = $tick;
+        register_shutdown_function(function () {
+            $this->flush(true);
+        });
+        $this->tick > 0 && \Swoole\Timer::tick($this->tick * 1000, [$this, 'flush'], [true]);
     }
 
     /**
-     * @return float
+     * @param callable $setTemplate
+     * @param callable $getTemplate
      */
-    public function getTick(): float
+    public function registerTemplate(callable $getTemplate): void
     {
-        return $this->tick;
+        $this->getTemplate = $getTemplate;
+    }
+
+    /**
+     * @return array
+     */
+    protected function beforeLog(): array
+    {
+        if ($this->getTemplate) {
+            $template = call_user_func($this->getTemplate);
+            $template = $template ?? [];
+        } else {
+            $template = [];
+        }
+        return $template;
     }
 
     /**
