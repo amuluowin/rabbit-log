@@ -40,11 +40,11 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
      */
     public function log(string $level, string $message, array $context = []): void
     {
+        $template = $this->getTemplate();
         $module = isset($context['module']) ? $context['module'] : null;
         if ($module !== null) {
             $this->logger->setLogger($this->appName . '_' . $module);
         }
-        $template = $this->beforeLog();
         isset($template['%Q']) && $this->logger->setRequestID($template['%Q']);
         $this->logger->setRequestVariable(array_filter([
             SEASLOG_REQUEST_VARIABLE_DOMAIN_PORT => isset($template['%D']) ? $template['%D'] : null,

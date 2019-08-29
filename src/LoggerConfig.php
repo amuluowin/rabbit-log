@@ -84,7 +84,7 @@ class LoggerConfig extends AbstractConfig
      */
     public function log(string $level, string $message, array $context = []): void
     {
-        $template = $this->beforeLog();
+        $template = $this->getTemplate();
         $msg = [];
         foreach ($this->template as $tmp) {
             switch ($tmp) {

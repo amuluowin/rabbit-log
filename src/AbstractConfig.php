@@ -20,7 +20,7 @@ abstract class AbstractConfig
     /** @var int */
     protected $recall_depth = 0;
     /** @var callable */
-    protected $getTemplate;
+    protected $userTemplate;
 
     /**
      * AbstractConfig constructor.
@@ -40,18 +40,18 @@ abstract class AbstractConfig
      * @param callable $setTemplate
      * @param callable $getTemplate
      */
-    public function registerTemplate(callable $getTemplate): void
+    public function registerTemplate(callable $userTemplate): void
     {
-        $this->getTemplate = $getTemplate;
+        $this->userTemplate = $userTemplate;
     }
 
     /**
      * @return array
      */
-    protected function beforeLog(): array
+    protected function getTemplate(): array
     {
-        if ($this->getTemplate) {
-            $template = call_user_func($this->getTemplate);
+        if ($this->userTemplate) {
+            $template = call_user_func($this->userTemplate);
             $template = $template ?? [];
         } else {
             $template = [];
