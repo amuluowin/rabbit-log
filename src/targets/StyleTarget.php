@@ -73,6 +73,7 @@ class StyleTarget extends AbstractTarget
                 } else {
                     $ranColor = $this->default;
                 }
+                $context = [];
                 foreach ($msg as $index => $m) {
                     if (isset($this->colorTemplate[$index])) {
                         $color = $this->colorTemplate[$index];
@@ -95,7 +96,9 @@ class StyleTarget extends AbstractTarget
                         $context[] = $this->color->apply($this->default, $m);
                     }
                 }
-                echo implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL;
+                if (!empty($context)) {
+                    echo implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL;
+                }
             }
         }
     }
