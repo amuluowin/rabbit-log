@@ -118,15 +118,15 @@ class WebsocketTarget extends AbstractTarget
     {
         switch (strtolower($level)) {
             case LogLevel::INFO:
-                return "green";
+                return "Green";
             case LogLevel::DEBUG:
-                return 'dark_gray';
+                return 'DarkGray';
             case LogLevel::ERROR:
-                return "red";
+                return "Red";
             case LogLevel::WARNING:
-                return 'yellow';
+                return 'Yellow';
             default:
-                return 'light_red';
+                return 'DarkRed';
         }
     }
 
