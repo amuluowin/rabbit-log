@@ -9,7 +9,11 @@
 namespace rabbit\log\targets;
 
 use rabbit\App;
+use rabbit\compool\BaseCompool;
 use rabbit\compool\ComPoolInterface;
+use rabbit\compool\ComPoolProperties;
+use rabbit\contract\InitInterface;
+use rabbit\core\ObjectFactory;
 use rabbit\files\FileCom;
 use rabbit\files\FileHelper;
 use rabbit\helper\ArrayHelper;
@@ -19,7 +23,7 @@ use rabbit\helper\StringHelper;
  * Class FileTarget
  * @package rabbit\log\targets
  */
-class FileTarget extends AbstractTarget
+class FileTarget extends AbstractTarget implements InitInterface
 {
     /**
      * @var string
@@ -45,12 +49,8 @@ class FileTarget extends AbstractTarget
      * @var int
      */
     private $dirMode = 0775;
-    /**
-     * @var bool
-     */
-    private $rotateByCopy = true;
-    /** @var ComPoolInterface */
-    private $pool;
+    /** @var array */
+    private $pool = [];
     /** @var ComPoolInterface[] */
     private $poolList = [];
 
@@ -69,6 +69,16 @@ class FileTarget extends AbstractTarget
         }
         if ($this->maxFileSize < 1) {
             $this->maxFileSize = 1;
+        }
+        if (empty($this->pool)) {
+            $this->pool = [
+                'class' => BaseCompool::class,
+                'comClass' => FileCom::class,
+                'poolConfig' => ObjectFactory::createObject([
+                    'class' => ComPoolProperties::class,
+                    'count' => 10,
+                ], [], false)
+            ];
         }
         $logPath = dirname($this->logFile);
         FileHelper::createDirectory($logPath, $this->dirMode, true);
@@ -90,7 +100,7 @@ class FileTarget extends AbstractTarget
             }
             $key = md5($file);
             if (!isset($this->poolList[$key])) {
-                $pool = clone $this->pool;
+                $pool = ObjectFactory::createObject($this->pool, [], false);
                 $pool->getPoolConfig()->setConfig([
                     'file' => $file,
                     'option' => 'a+',
@@ -99,6 +109,9 @@ class FileTarget extends AbstractTarget
                 $this->poolList[$key] = $pool;
             } else {
                 $pool = $this->poolList[$key];
+            }
+            if ($this->fileMode !== null) {
+                @chmod($file, $this->fileMode);
             }
             rgo(function () use ($file, $message, $pool) {
                 /** @var FileCom $fileCom */
@@ -125,16 +138,14 @@ class FileTarget extends AbstractTarget
                     ArrayHelper::remove($msg, '%c');
                     $text .= implode($this->split, $msg) . PHP_EOL;
                 }
-                !empty($text) && $fileCom->lock(function () use ($text, $fileCom, $file) {
+                if (!empty($text)) {
+                    $fileCom->lock(function () use ($file) {
+                        if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
+                            $this->rotateFiles($file);
+                        }
+                    });
                     $fileCom->write($text);
-                    $fileCom->release();
-                    if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
-                        $this->rotateFiles($file);
-                    }
-                    if ($this->fileMode !== null) {
-                        @chmod($file, $this->fileMode);
-                    }
-                });
+                }
             });
         }
     }
@@ -155,8 +166,7 @@ class FileTarget extends AbstractTarget
                     continue;
                 }
                 $newFile = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '-f' . ($i + 1) . '.' . $fileInfo['extension'];
-                $this->rotateByCopy ? $this->rotateByCopy($rotateFile, $newFile) : $this->rotateByRename($rotateFile,
-                    $newFile);
+                $this->rotateByCopy($rotateFile, $newFile);
                 if ($i === 0) {
                     $this->clearLogFile($rotateFile);
                 }
@@ -171,7 +181,9 @@ class FileTarget extends AbstractTarget
     private function clearLogFile($rotateFile)
     {
         if ($filePointer = @fopen($rotateFile, 'a')) {
+            @flock($filePointer, LOCK_EX);
             @ftruncate($filePointer, 0);
+            @flock($filePointer, LOCK_UN);
             @fclose($filePointer);
         }
     }
@@ -187,15 +199,5 @@ class FileTarget extends AbstractTarget
         if ($this->fileMode !== null) {
             @chmod($newFile, $this->fileMode);
         }
-    }
-
-    /**
-     * Renames rotated file into new file
-     * @param string $rotateFile
-     * @param string $newFile
-     */
-    private function rotateByRename($rotateFile, $newFile)
-    {
-        @rename($rotateFile, $newFile);
     }
 }
