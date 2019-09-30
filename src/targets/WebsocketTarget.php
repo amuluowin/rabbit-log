@@ -7,8 +7,12 @@ use Psr\Log\LogLevel;
 use rabbit\App;
 use rabbit\helper\ArrayHelper;
 use rabbit\helper\StringHelper;
+use rabbit\httpserver\CoServer;
 use rabbit\log\HtmlColor;
+use rabbit\parser\ParserInterface;
+use rabbit\parser\PhpParser;
 use rabbit\wsserver\Server;
+use Swoole\Http\Response;
 
 /**
  * Class WebsocketTarget
@@ -36,6 +40,14 @@ class WebsocketTarget extends AbstractTarget
     private $default = 'LightGray';
     /** @var string */
     private $route = '/logs';
+    /** @var ParserInterface */
+    protected $parser;
+
+    public function __construct(string $split = ' | ')
+    {
+        parent::__construct($split);
+        $this->parser = new PhpParser();
+    }
 
     /**
      * @param array $messages
@@ -48,62 +60,81 @@ class WebsocketTarget extends AbstractTarget
         if (!$server) {
             return;
         }
-        $table = $server->getTable();
-        /** @var Server $swooleServer */
-        $swooleServer = $server->getSwooleServer();
-        foreach ($swooleServer->connections as $fd) {
-            if ($table->exist($fd) && $table->get($fd,
-                    'path') === $this->route && $swooleServer->isEstablished($fd)) {
-                foreach ($messages as $message) {
-                    foreach ($message as $msg) {
-                        if (is_string($msg)) {
-                            switch (ini_get('seaslog.appender')) {
-                                case '2':
-                                case '3':
-                                    $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
-                                    break;
-                            }
-                            $msg = explode($this->split, trim($msg));
-                            $ranColor = $this->default;
-                        } else {
-                            $ranColor = ArrayHelper::remove($msg, '%c');
-                        }
-                        if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
-                            continue;
-                        }
-                        if (empty($ranColor)) {
-                            $ranColor = $this->default;
-                        } elseif (is_array($ranColor) && count($ranColor) === 2) {
-                            $ranColor = $ranColor[1];
-                        } else {
-                            $ranColor = $this->default;
-                        }
-                        foreach ($msg as $index => $m) {
-                            $msg[$index] = trim($m);
-                            if (isset($this->colorTemplate[$index])) {
-                                $color = $this->colorTemplate[$index];
-                                $level = trim($msg[$this->levelIndex]);
-                                switch ($color) {
-                                    case self::COLOR_LEVEL:
-                                        $colors[] = HtmlColor::getColor($this->getLevelColor($level));
-                                        break;
-                                    case self::COLOR_RANDOM:
-                                        $colors[] = HtmlColor::getColor($ranColor);
-                                        break;
-                                    case self::COLOR_DEFAULT:
-                                        $colors[] = $this->default;
-                                        break;
-                                    default:
-                                        $colors[] = HtmlColor::getColor($color);
-                                }
-                            } else {
+
+        $swooleServer = null;
+        if ($server instanceof Server) {
+            $table = $server->getTable()->getTable();
+        } elseif ($server instanceof CoServer) {
+            $table = $server->wsRoute->getSwooleResponses($this->route);
+        } else {
+            return;
+        }
+
+        foreach ($messages as $message) {
+            foreach ($message as $msg) {
+                if (is_string($msg)) {
+                    switch (ini_get('seaslog.appender')) {
+                        case '2':
+                        case '3':
+                            $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
+                            break;
+                    }
+                    $msg = explode($this->split, trim($msg));
+                    $ranColor = $this->default;
+                } else {
+                    $ranColor = ArrayHelper::remove($msg, '%c');
+                }
+                if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]),
+                        $this->levelList)) {
+                    continue;
+                }
+                if (empty($ranColor)) {
+                    $ranColor = $this->default;
+                } elseif (is_array($ranColor) && count($ranColor) === 2) {
+                    $ranColor = $ranColor[1];
+                } else {
+                    $ranColor = $this->default;
+                }
+                foreach ($msg as $index => $m) {
+                    $msg[$index] = trim($m);
+                    if (isset($this->colorTemplate[$index])) {
+                        $color = $this->colorTemplate[$index];
+                        $level = trim($msg[$this->levelIndex]);
+                        switch ($color) {
+                            case self::COLOR_LEVEL:
+                                $colors[] = HtmlColor::getColor($this->getLevelColor($level));
+                                break;
+                            case self::COLOR_RANDOM:
+                                $colors[] = HtmlColor::getColor($ranColor);
+                                break;
+                            case self::COLOR_DEFAULT:
                                 $colors[] = $this->default;
-                            }
+                                break;
+                            default:
+                                $colors[] = HtmlColor::getColor($color);
                         }
-                        $msg = json_encode([$msg, $colors], JSON_UNESCAPED_UNICODE);
-                        rgo(function () use ($swooleServer, $fd, $msg) {
-                            $swooleServer->push($fd, $msg);
-                        });
+                    } else {
+                        $colors[] = $this->default;
+                    }
+                }
+                $msg = json_encode([$msg, $colors], JSON_UNESCAPED_UNICODE);
+                rgo(function () use ($server, $table, $msg) {
+                    foreach ($table as $fd => $item) {
+                        if ($item instanceof Response) {
+                            $item->push($msg);
+                        } elseif (isset($item['path']) && $item['path'] === $this->route) {
+                            $server->getSwooleServer()->push($fd, $msg);
+                        }
+                    }
+                });
+                if ($server instanceof CoServer) {
+                    for ($i = 0; $i < $server->getSwooleServer()->settings['worker_num']; $i++) {
+                        if ($i !== $server->workerId) {
+                            rgo(function () use ($msg, $server, $i) {
+                                $server->getProcess($i)->exportSocket()->send(json_encode([$this->route, $msg],
+                                    JSON_UNESCAPED_UNICODE));
+                            });
+                        }
                     }
                 }
             }

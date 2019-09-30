@@ -12,7 +12,7 @@ use rabbit\contract\InitInterface;
  * Class Logger
  * @package rabbit\log
  */
-class Logger implements LoggerInterface
+class Logger implements LoggerInterface, InitInterface
 {
     /** @var array */
     protected $level = [];
@@ -28,6 +28,10 @@ class Logger implements LoggerInterface
     public function __construct(AbstractConfig $config)
     {
         $this->config = $config;
+    }
+
+    public function init()
+    {
         if ($this->config instanceof InitInterface) {
             $this->config->init();
         }

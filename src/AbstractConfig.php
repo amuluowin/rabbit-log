@@ -3,13 +3,14 @@
 
 namespace rabbit\log;
 
+use rabbit\contract\InitInterface;
 use rabbit\log\targets\AbstractTarget;
 
 /**
  * Interface ConfigInterface
  * @package rabbit\log
  */
-abstract class AbstractConfig
+abstract class AbstractConfig implements InitInterface
 {
     /** @var int */
     protected $bufferSize = 1;
@@ -33,8 +34,14 @@ abstract class AbstractConfig
         register_shutdown_function(function () {
             $this->flush(true);
         });
+
+    }
+
+    public function init()
+    {
         $this->tick > 0 && \Swoole\Timer::tick($this->tick * 1000, [$this, 'flush'], [true]);
     }
+
 
     /**
      * @param callable $setTemplate
