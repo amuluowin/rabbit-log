@@ -131,8 +131,8 @@ class WebsocketTarget extends AbstractTarget
                     for ($i = 0; $i < $server->getSwooleServer()->settings['worker_num']; $i++) {
                         if ($i !== $server->workerId) {
                             rgo(function () use ($msg, $server, $i) {
-                                $server->getProcess($i)->exportSocket()->send(json_encode([$this->route, $msg],
-                                    JSON_UNESCAPED_UNICODE));
+                                $server->getProcessSocket()->send([static::class . '::taskExport', [$route, $msg]],
+                                    $i);
                             });
                         }
                     }
@@ -161,4 +161,13 @@ class WebsocketTarget extends AbstractTarget
         }
     }
 
+    public static function taskExport(string $route, string $msg): void
+    {
+        /** @var CoServer $server */
+        $server = App::getServer();
+        $responses = $server->wsRoute->getSwooleResponses($route);
+        foreach ($responses as $fd => $response) {
+            $response->push($msg);
+        }
+    }
 }
