@@ -37,10 +37,12 @@ class StyleTarget extends AbstractTarget
 
     /**
      * StyleTarget constructor.
+     * @param string $split
      */
-    public function __construct(ConsoleColor $color)
+    public function __construct(string $split = ' | ')
     {
-        $this->color = $color;
+        parent::__construct($split);
+        $this->color = new ConsoleColor();
     }
 
     /**
