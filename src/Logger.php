@@ -3,7 +3,6 @@
 
 namespace rabbit\log;
 
-
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use rabbit\contract\InitInterface;

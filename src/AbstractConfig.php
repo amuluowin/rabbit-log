@@ -34,7 +34,6 @@ abstract class AbstractConfig implements InitInterface
         register_shutdown_function(function () {
             $this->flush(true);
         });
-
     }
 
     public function init()

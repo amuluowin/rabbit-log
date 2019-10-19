@@ -84,8 +84,10 @@ class WebsocketTarget extends AbstractTarget
                 } else {
                     $ranColor = ArrayHelper::remove($msg, '%c');
                 }
-                if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]),
-                        $this->levelList)) {
+                if (!empty($this->levelList) && !in_array(
+                    strtolower($msg[$this->levelIndex]),
+                    $this->levelList
+                )) {
                     continue;
                 }
                 if (empty($ranColor)) {
@@ -128,14 +130,7 @@ class WebsocketTarget extends AbstractTarget
                     }
                 });
                 if ($server instanceof CoServer) {
-                    for ($i = 0; $i < $server->getSwooleServer()->settings['worker_num']; $i++) {
-                        if ($i !== $server->workerId) {
-                            rgo(function () use ($msg, $server, $i) {
-                                $server->getProcessSocket()->send([static::class . '::taskExport', [$route, $msg]],
-                                    $i);
-                            });
-                        }
-                    }
+                    $server->getProcessSocket()->sendAll([static::class . '::taskExport', [$route, $msg]]);
                 }
             }
         }

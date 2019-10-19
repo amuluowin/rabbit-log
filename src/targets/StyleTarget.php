@@ -124,5 +124,4 @@ class StyleTarget extends AbstractTarget
                 return 'light_red';
         }
     }
-
 }

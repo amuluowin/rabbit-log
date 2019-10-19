@@ -5,7 +5,6 @@ namespace rabbit\log;
 
 use rabbit\exception\InvalidConfigException;
 use rabbit\helper\ArrayHelper;
-use rabbit\helper\CoroHelper;
 
 /**
  * Class LoggerConfig
@@ -118,8 +117,11 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = ArrayHelper::getValue($template, $tmp, uniqid());
                     break;
                 case '%H':
-                    $msg[] = ArrayHelper::getValue($template, $tmp,
-                        isset($_SERVER['HOSTNAME']) ? $_SERVER['HOSTNAME'] : 'local');
+                    $msg[] = ArrayHelper::getValue(
+                        $template,
+                        $tmp,
+                        isset($_SERVER['HOSTNAME']) ? $_SERVER['HOSTNAME'] : 'local'
+                    );
                     break;
                 case '%P':
                     $msg[] = ArrayHelper::getValue($template, $tmp, getmypid());
@@ -128,8 +130,11 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = ArrayHelper::getValue($template, $tmp, 'cli');
                     break;
                 case '%R':
-                    $msg[] = ArrayHelper::getValue($template, $tmp,
-                        isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/');
+                    $msg[] = ArrayHelper::getValue(
+                        $template,
+                        $tmp,
+                        isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/'
+                    );
                     break;
                 case '%m':
                     $msg[] = strtoupper(ArrayHelper::getValue($template, $tmp, 'unknow'));
@@ -139,8 +144,11 @@ class LoggerConfig extends AbstractConfig
                     break;
                 case '%F':
                 case '%C':
-                    $trace = \Co::getBackTrace(CoroHelper::getId(), DEBUG_BACKTRACE_IGNORE_ARGS,
-                        $this->recall_depth + 2);
+                    $trace = \Co::getBackTrace(
+                        \Co::getCid(),
+                        DEBUG_BACKTRACE_IGNORE_ARGS,
+                        $this->recall_depth + 2
+                    );
                     if ($tmp === '%F') {
                         $trace = $trace[$this->recall_depth];
                         $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] : $trace['file'] . ':' . $trace['line'];
