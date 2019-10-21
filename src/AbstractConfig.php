@@ -38,6 +38,9 @@ abstract class AbstractConfig implements InitInterface
 
     public function init()
     {
+        foreach ($this->targetList as $target) {
+            $target->init();
+        }
         $this->tick > 0 && \Swoole\Timer::tick($this->tick * 1000, [$this, 'flush'], [true]);
     }
 

@@ -23,7 +23,7 @@ use rabbit\helper\StringHelper;
  * Class FileTarget
  * @package rabbit\log\targets
  */
-class FileTarget extends AbstractTarget implements InitInterface
+class FileTarget extends AbstractTarget
 {
     /**
      * @var string

@@ -3,11 +3,13 @@
 
 namespace rabbit\log\targets;
 
+use rabbit\contract\InitInterface;
+
 /**
  * Class AbstractTarget
  * @package rabbit\log\targets
  */
-abstract class AbstractTarget
+abstract class AbstractTarget implements InitInterface
 {
     /** @var string */
     protected $split = ' | ';
@@ -24,6 +26,11 @@ abstract class AbstractTarget
     {
         $this->split = $split;
     }
+
+    public function init()
+    {
+    }
+
 
     /**
      * @param array $messages
