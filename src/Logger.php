@@ -17,6 +17,8 @@ class Logger implements LoggerInterface, InitInterface
     protected $level = [];
     /** @var AbstractConfig */
     private $config;
+    /** @var TemplateInterface */
+    protected $template;
 
     const CONTEXT_KEY = 'logger.default';
 
@@ -33,6 +35,9 @@ class Logger implements LoggerInterface, InitInterface
     {
         if ($this->config instanceof InitInterface) {
             $this->config->init();
+        }
+        if ($this->template instanceof TemplateInterface) {
+            $this->template->handle($this);
         }
     }
 
