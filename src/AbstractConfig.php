@@ -20,7 +20,7 @@ abstract class AbstractConfig implements InitInterface
     protected $tick = 0;
     /** @var int */
     protected $recall_depth = 0;
-    /** @var callable */
+    /** @var TemplateInterface */
     protected $userTemplate;
 
     /**
@@ -59,8 +59,8 @@ abstract class AbstractConfig implements InitInterface
      */
     protected function getTemplate(): array
     {
-        if ($this->userTemplate) {
-            $template = call_user_func($this->userTemplate);
+        if ($this->userTemplate instanceof TemplateInterface) {
+            $template = $this->userTemplate->handle();
             $template = $template ?? [];
         } else {
             $template = [];

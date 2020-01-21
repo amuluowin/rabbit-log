@@ -10,7 +10,7 @@ namespace rabbit\log;
 interface TemplateInterface
 {
     /**
-     * @param Logger $logger
+     * @return array
      */
-    public function handle(Logger $logger): void;
+    public function handle(): array ;
 }
