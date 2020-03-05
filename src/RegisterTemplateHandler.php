@@ -5,7 +5,7 @@ namespace rabbit\log;
 
 use Psr\Http\Message\ServerRequestInterface;
 use rabbit\core\Context;
-use rabbit\helper\ArrayHelper;
+use rabbit\httpserver\IPHelper;
 use rabbit\server\AttributeEnum;
 
 /**
@@ -43,7 +43,7 @@ class RegisterTemplateHandler implements TemplateInterface
                     '%Q' => $requestId,
                     '%R' => $uri->getPath(),
                     '%m' => $serverRequest->getMethod(),
-                    '%I' => ArrayHelper::getValue($serverRequest->getServerParams(), 'remote_addr'),
+                    '%I' => IPHelper::getClientIp($serverRequest),
                     '%c' => [
                         $this->possibleStyles[rand(0, count($this->possibleStyles) - 1)],
                         $this->htmlColors[rand(0, count($this->htmlColors) - 1)]
