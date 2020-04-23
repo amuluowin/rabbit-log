@@ -15,9 +15,9 @@ use rabbit\server\AttributeEnum;
 class RegisterTemplateHandler implements TemplateInterface
 {
     /** @var array */
-    private $possibleStyles = [];
+    protected $possibleStyles = [];
     /** @var array */
-    private $htmlColors = [];
+    protected $htmlColors = [];
 
     /**
      * RegisterTemplateHandler constructor.
