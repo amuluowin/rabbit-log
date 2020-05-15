@@ -56,7 +56,8 @@ class LoggerConfig extends AbstractConfig
         array $target,
         float $tick = 0,
         array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
-    ) {
+    )
+    {
         parent::__construct($target, $tick);
         foreach ($template as $tmp) {
             if (!in_array($tmp, self::$supportTemplate)) {
@@ -183,7 +184,7 @@ class LoggerConfig extends AbstractConfig
                     $target->export($this->buffer, $flush);
                 });
             }
-            array_splice($this->buffer, 0);
+            $this->buffer = [];
         }
     }
 }
