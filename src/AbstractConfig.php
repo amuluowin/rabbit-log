@@ -12,12 +12,8 @@ use rabbit\log\targets\AbstractTarget;
  */
 abstract class AbstractConfig implements InitInterface
 {
-    /** @var int */
-    protected $bufferSize = 1;
     /** @var AbstractTarget[] */
     protected $targetList = [];
-    /** @var int */
-    protected $tick = 0;
     /** @var int */
     protected $recall_depth = 0;
     /** @var TemplateInterface */
@@ -30,7 +26,6 @@ abstract class AbstractConfig implements InitInterface
     public function __construct(array $target, float $tick = 0)
     {
         $this->targetList = $target;
-        $this->tick = $tick;
         register_shutdown_function(function () {
             $this->flush(true);
         });
@@ -41,7 +36,6 @@ abstract class AbstractConfig implements InitInterface
         foreach ($this->targetList as $target) {
             $target->init();
         }
-        $this->tick > 0 && \Swoole\Timer::tick($this->tick * 1000, [$this, 'flush'], [true]);
     }
 
 
@@ -78,5 +72,5 @@ abstract class AbstractConfig implements InitInterface
     /**
      * @param bool $flush
      */
-    abstract public function flush(bool $flush = false): void;
+    abstract public function flush(array $buffer): void;
 }

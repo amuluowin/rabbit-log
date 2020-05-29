@@ -36,5 +36,5 @@ abstract class AbstractTarget implements InitInterface
      * @param array $messages
      * @param bool $flush
      */
-    abstract public function export(array $messages, bool $flush = true): void;
+    abstract public function export(array $messages): void;
 }

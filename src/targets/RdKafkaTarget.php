@@ -61,9 +61,8 @@ class RdKafkaTarget extends AbstractTarget
 
     /**
      * @param array $messages
-     * @param bool $flush
      */
-    public function export(array $messages, bool $flush = true): void
+    public function export(array $messages): void
     {
         foreach ($messages as $module => $message) {
             foreach ($message as $msg) {

@@ -28,9 +28,9 @@ class SeasStashTarget extends AbstractTarget
 
     /**
      * @param array $messages
-     * @param bool $flush
+     * @throws \rabbit\core\Exception
      */
-    public function export(array $messages, bool $flush = true): void
+    public function export(array $messages): void
     {
         /** @var AbstractTcpConnection $connection */
         $connection = $this->clientPool->getConnection();

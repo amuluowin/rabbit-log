@@ -12,8 +12,6 @@ use rabbit\helper\ArrayHelper;
  */
 class LoggerConfig extends AbstractConfig
 {
-    /** @var array */
-    protected $buffer = [];
     /** @var string */
     protected $datetime_format = "Y-m-d H:i:s";
     /** @var array */
@@ -169,22 +167,19 @@ class LoggerConfig extends AbstractConfig
         $color = ArrayHelper::getValue($template, '%c');
         $color && $msg['%c'] = $color;
         $key = $this->appName . '_' . ArrayHelper::getValue($context, 'module', 'system');
-        $this->buffer[$key][] = $msg;
-        $this->flush();
+        $buffer[$key][] = $msg;
+        $this->flush($buffer);
     }
 
     /**
      * @param bool $flush
      */
-    public function flush(bool $flush = false): void
+    public function flush(array $buffer): void
     {
-        if (!empty($this->buffer) && $flush || ($this->bufferSize !== 0 && $this->bufferSize <= count($this->buffer))) {
-            foreach ($this->targetList as $index => $target) {
-                rgo(function () use ($target, $flush) {
-                    $target->export($this->buffer, $flush);
-                });
-            }
-            $this->buffer = [];
+        foreach ($this->targetList as $index => $target) {
+            rgo(function () use ($target, $buffer) {
+                $target->export($buffer);
+            });
         }
     }
 }

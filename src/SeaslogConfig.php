@@ -46,31 +46,29 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
             $this->logger->setLogger($this->appName . '_' . $module);
         }
         isset($template['%Q']) && $this->logger->setRequestID($template['%Q']);
-        $this->logger->setRequestVariable(array_filter([
+        foreach (array_filter([
             SEASLOG_REQUEST_VARIABLE_DOMAIN_PORT => isset($template['%D']) ? $template['%D'] : null,
             SEASLOG_REQUEST_VARIABLE_REQUEST_URI => isset($template['%R']) ? $template['%R'] : null,
             SEASLOG_REQUEST_VARIABLE_REQUEST_METHOD => isset($template['%m']) ? $template['%m'] : null,
             SEASLOG_REQUEST_VARIABLE_CLIENT_IP => isset($template['%I']) ? $template['%I'] : null
-        ]));
+        ]) as $key => $value) {
+            $this->logger->setRequestVariable($key, $value);
+        }
         $this->logger->$level($message);
-        $this->flush();
+        $buffer = $this->logger->getBuffer();
+        $this->flush($buffer);
     }
 
     /**
      * @param bool $flush
      */
-    public function flush(bool $flush = false): void
+    public function flush(array $buffer): void
     {
-        $total = $this->logger->getBufferCount();
-        if ($flush || $total >= $this->bufferSize) {
-            $buffer = $this->logger->getBuffer();
-            $this->logger->flushBuffer(0);
-            foreach ($this->targetList as $index => $target) {
-                rgo(function () use ($target, $buffer, $flush) {
-                    $target->export($buffer, $flush);
-                });
-            }
-            unset($buffer);
+        $this->logger->flushBuffer(0);
+        foreach ($this->targetList as $index => $target) {
+            rgo(function () use ($target, $buffer) {
+                $target->export($buffer);
+            });
         }
     }
 }

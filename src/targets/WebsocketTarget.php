@@ -51,10 +51,9 @@ class WebsocketTarget extends AbstractTarget
 
     /**
      * @param array $messages
-     * @param bool $flush
      * @throws \Exception
      */
-    public function export(array $messages, bool $flush = true): void
+    public function export(array $messages): void
     {
         $server = App::getServer();
         if (!$server) {

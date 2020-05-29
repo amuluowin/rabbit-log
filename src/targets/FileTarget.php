@@ -86,9 +86,10 @@ class FileTarget extends AbstractTarget
 
     /**
      * @param array $messages
-     * @param bool $flush
+     * @throws \DI\DependencyException
+     * @throws \DI\NotFoundException
      */
-    public function export(array $messages, bool $flush = true): void
+    public function export(array $messages): void
     {
         $fileInfo = pathinfo($this->logFile);
         foreach ($messages as $module => $message) {
