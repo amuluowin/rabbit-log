@@ -174,12 +174,14 @@ class LoggerConfig extends AbstractConfig
     /**
      * @param bool $flush
      */
-    public function flush(array $buffer): void
+    public function flush(array $buffer = []): void
     {
-        foreach ($this->targetList as $index => $target) {
-            rgo(function () use ($target, $buffer) {
-                $target->export($buffer);
-            });
+        if (!empty($buffer)) {
+            foreach ($this->targetList as $index => $target) {
+                rgo(function () use ($target, $buffer) {
+                    $target->export($buffer);
+                });
+            }
         }
     }
 }

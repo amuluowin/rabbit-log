@@ -26,9 +26,6 @@ abstract class AbstractConfig implements InitInterface
     public function __construct(array $target, float $tick = 0)
     {
         $this->targetList = $target;
-        register_shutdown_function(function () {
-            $this->flush(true);
-        });
     }
 
     public function init()
