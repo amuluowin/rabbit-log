@@ -3,6 +3,7 @@
 
 namespace rabbit\log\targets;
 
+use Co\Channel;
 use rabbit\contract\InitInterface;
 
 /**
@@ -17,6 +18,12 @@ abstract class AbstractTarget implements InitInterface
     protected $levelList = [];
     /** @var int */
     protected $levelIndex = 1;
+    /** @var Channel */
+    protected $channel;
+    /** @var int */
+    protected $batch = 1;
+    /** @var float */
+    protected $waitTime = 0.05;
 
     /**
      * AbstractTarget constructor.
