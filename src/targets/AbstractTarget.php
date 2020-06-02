@@ -21,7 +21,7 @@ abstract class AbstractTarget implements InitInterface
     /** @var Channel */
     protected $channel;
     /** @var int */
-    protected $batch = 1;
+    protected $batch = 100;
     /** @var float */
     protected $waitTime = 0.05;
 
