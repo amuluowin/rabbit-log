@@ -143,7 +143,9 @@ class StyleTarget extends AbstractTarget
                 }
                 $logs[] = $log;
             }
-            !empty($logs) && fwrite(STDIN, implode("", $logs));
+            if (!empty($logs)) {
+                echo implode("", $logs);
+            }
         });
     }
 }
