@@ -32,6 +32,7 @@ abstract class AbstractTarget implements InitInterface
     public function __construct(string $split = ' | ')
     {
         $this->split = $split;
+        $this->channel = new Channel();
     }
 
     public function init()
