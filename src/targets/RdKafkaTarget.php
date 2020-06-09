@@ -44,6 +44,7 @@ class RdKafkaTarget extends AbstractTarget
      */
     public function __construct(string $producer, string $key = 'kafka')
     {
+        parent::__construct();
         $this->producer = $producer;
         $this->key = $key;
     }
