@@ -5,7 +5,6 @@ namespace rabbit\log\targets;
 
 use Psr\Log\LogLevel;
 use rabbit\helper\ArrayHelper;
-use rabbit\helper\ExceptionHelper;
 use rabbit\helper\StringHelper;
 use rabbit\log\ConsoleColor;
 
@@ -135,22 +134,16 @@ class StyleTarget extends AbstractTarget
      */
     private function write(): void
     {
-        rgo(function () {
-            while (true) {
-                try {
-                    $logs = [];
-                    for ($i = 0; $i < $this->batch; $i++) {
-                        $log = $this->channel->pop($this->waitTime);
-                        if ($log === false) {
-                            break;
-                        }
-                        $logs[] = $log;
-                    }
-                    !empty($logs) && fwrite(STDIN, implode("", $logs));
-                } catch (\Throwable $exception) {
-                    fwrite(STDIN, ExceptionHelper::dumpExceptionToString($exception));
+        goloop(function () {
+            $logs = [];
+            for ($i = 0; $i < $this->batch; $i++) {
+                $log = $this->channel->pop($this->waitTime);
+                if ($log === false) {
+                    break;
                 }
+                $logs[] = $log;
             }
+            !empty($logs) && fwrite(STDIN, implode("", $logs));
         });
     }
 }
