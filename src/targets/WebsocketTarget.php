@@ -49,11 +49,6 @@ class WebsocketTarget extends AbstractTarget
         $this->parser = new PhpParser();
     }
 
-    public function init()
-    {
-
-    }
-
     /**
      * @param array $messages
      * @throws \Exception
@@ -62,15 +57,6 @@ class WebsocketTarget extends AbstractTarget
     {
         $server = App::getServer();
         if (!$server) {
-            return;
-        }
-
-        $swooleServer = null;
-        if ($server instanceof Server) {
-            $table = $server->getTable()->getTable();
-        } elseif ($server instanceof CoServer) {
-            $table = $server->wsRoute->getSwooleResponses($this->route);
-        } else {
             return;
         }
 
@@ -89,9 +75,9 @@ class WebsocketTarget extends AbstractTarget
                     $ranColor = ArrayHelper::remove($msg, '%c');
                 }
                 if (!empty($this->levelList) && !in_array(
-                    strtolower($msg[$this->levelIndex]),
-                    $this->levelList
-                )) {
+                        strtolower($msg[$this->levelIndex]),
+                        $this->levelList
+                    )) {
                     continue;
                 }
                 if (empty($ranColor)) {
@@ -123,26 +109,39 @@ class WebsocketTarget extends AbstractTarget
                         $colors[] = $this->default;
                     }
                 }
-                $msg = json_encode([$msg, $colors], JSON_UNESCAPED_UNICODE);
-                rgo(function () use ($server, $table, $msg) {
-                    foreach ($table as $fd => $item) {
-                        if ($item instanceof Response) {
-                            $item->push($msg);
-                        } elseif (isset($item['path']) && $item['path'] === $this->route) {
-                            $server->getSwooleServer()->push($fd, $msg);
-                        }
-                    }
-                });
-                if ($server instanceof CoServer) {
-                    $server->getProcessSocket()->sendAll([static::class . '::taskExport', [$route, $msg]]);
-                }
+                $this->channel->push([$msg, $colors]);
             }
         }
     }
 
     protected function write(): void
     {
-
+        goloop(function () {
+            $msg = $this->getLogs();
+            $swooleServer = null;
+            if ($server instanceof Server) {
+                $table = $server->getTable()->getTable();
+            } elseif ($server instanceof CoServer) {
+                $table = $server->wsRoute->getSwooleResponses($this->route);
+            } else {
+                return;
+            }
+            if (empty($msg)) {
+                return;
+            }
+            rgo(function () use ($server, $table, $msg) {
+                foreach ($table as $fd => $item) {
+                    if ($item instanceof Response) {
+                        $item->push(json_encode($msg, JSON_UNESCAPED_UNICODE));
+                    } elseif (isset($item['path']) && $item['path'] === $this->route) {
+                        $server->getSwooleServer()->push($fd, json_encode($msg, JSON_UNESCAPED_UNICODE));
+                    }
+                }
+            });
+            if ($server instanceof CoServer) {
+                $server->getProcessSocket()->sendAll([static::class . '::taskExport', [$route, $msg]]);
+            }
+        });
     }
 
     /**
@@ -171,7 +170,7 @@ class WebsocketTarget extends AbstractTarget
         $server = App::getServer();
         $responses = $server->wsRoute->getSwooleResponses($route);
         foreach ($responses as $fd => $response) {
-            $response->push($msg);
+            $response->push(json_encode($msg, JSON_UNESCAPED_UNICODE));
         }
     }
 }

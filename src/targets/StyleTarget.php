@@ -45,11 +45,6 @@ class StyleTarget extends AbstractTarget
         $this->color = new ConsoleColor();
     }
 
-    public function init()
-    {
-        $this->write();
-    }
-
     /**
      * @param array $messages
      */
@@ -135,14 +130,7 @@ class StyleTarget extends AbstractTarget
     protected function write(): void
     {
         goloop(function () {
-            $logs = [];
-            for ($i = 0; $i < $this->batch; $i++) {
-                $log = $this->channel->pop($this->waitTime);
-                if ($log === false) {
-                    break;
-                }
-                $logs[] = $log;
-            }
+            $logs = $this->getLogs();
             if (!empty($logs)) {
                 echo implode("", $logs);
             }
