@@ -151,6 +151,12 @@ class FileTarget extends AbstractTarget
         }
     }
 
+    protected function write(): void
+    {
+
+    }
+
+
     /**
      * @param string $file
      */

@@ -66,9 +66,7 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
     {
         $this->logger->flushBuffer(0);
         foreach ($this->targetList as $index => $target) {
-            rgo(function () use ($target, $buffer) {
-                $target->export($buffer);
-            });
+            $target->export($buffer);
         }
     }
 }

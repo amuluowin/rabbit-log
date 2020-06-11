@@ -132,7 +132,7 @@ class StyleTarget extends AbstractTarget
     /**
      * @throws \Exception
      */
-    private function write(): void
+    protected function write(): void
     {
         goloop(function () {
             $logs = [];

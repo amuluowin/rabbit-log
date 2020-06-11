@@ -178,9 +178,7 @@ class LoggerConfig extends AbstractConfig
     {
         if (!empty($buffer)) {
             foreach ($this->targetList as $index => $target) {
-                rgo(function () use ($target, $buffer) {
-                    $target->export($buffer);
-                });
+                $target->export($buffer);
             }
         }
     }

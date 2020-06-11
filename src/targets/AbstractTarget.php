@@ -37,6 +37,23 @@ abstract class AbstractTarget implements InitInterface
 
     public function init()
     {
+        $this->write();
+    }
+
+    /**
+     * @return array
+     */
+    public function getLogs(): array
+    {
+        $logs = [];
+        for ($i = 0; $i < $this->batch; $i++) {
+            $log = $this->channel->pop($this->waitTime);
+            if ($log === false) {
+                break;
+            }
+            $logs[] = $log;
+        }
+        return $logs;
     }
 
 
@@ -45,4 +62,6 @@ abstract class AbstractTarget implements InitInterface
      * @param bool $flush
      */
     abstract public function export(array $messages): void;
+
+    abstract protected function write(): void;
 }

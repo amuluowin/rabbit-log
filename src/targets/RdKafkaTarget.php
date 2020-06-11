@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace rabbit\log\targets;
 
-use Co\System;
 use rabbit\helper\ArrayHelper;
 use Rabbit\Rdkafka\KafkaManager;
 use RdKafka\Producer;
@@ -51,6 +50,7 @@ class RdKafkaTarget extends AbstractTarget
 
     public function init()
     {
+        parent::init();
         /** @var KafkaManager $kafka */
         $kafka = getDI($this->key);
         $this->topic = $kafka->getProducerTopic($this->producer, $this->topic, [
@@ -101,11 +101,16 @@ class RdKafkaTarget extends AbstractTarget
                             $log[$name] = trim($value);
                     }
                 }
-                while (!$this->topic instanceof ProducerTopic) {
-                    System::sleep(0.001);
-                }
-                $this->topic->produce(RD_KAFKA_PARTITION_UA, 0, json_encode($log));
+                $this->channel->push(json_encode($log));
             }
         }
+    }
+
+    public function write(): void
+    {
+        goloop(function () {
+            $logs = $this->getLogs();
+            !empty($logs) && $this->topic->produce(RD_KAFKA_PARTITION_UA, 0, implode(',', $logs));
+        });
     }
 }

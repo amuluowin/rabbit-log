@@ -49,6 +49,11 @@ class WebsocketTarget extends AbstractTarget
         $this->parser = new PhpParser();
     }
 
+    public function init()
+    {
+
+    }
+
     /**
      * @param array $messages
      * @throws \Exception
@@ -133,6 +138,11 @@ class WebsocketTarget extends AbstractTarget
                 }
             }
         }
+    }
+
+    protected function write(): void
+    {
+
     }
 
     /**
