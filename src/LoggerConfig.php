@@ -96,21 +96,15 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = str_replace($this->split, ' ', $message);
                     break;
                 case '%T':
+                    $micsec = in_array($this->isMicrotime, [3, 6]) ? $this->isMicrotime : 3;
+                    $mtimestamp = sprintf("%.{$micsec}f", microtime(true));
+                    [$timestamp, $milliseconds] = explode('.', $mtimestamp);
+                    $msg[] = date($this->datetime_format, (int)$timestamp) . '.' . $milliseconds;
+                    break;
                 case '%t':
-                    if ($this->isMicrotime > 0) {
-                        $micsec = $this->isMicrotime > 3 ? 3 : $this->isMicrotime;
-                        $mtimestamp = sprintf("%.{$micsec}f", microtime(true)); // 带毫秒的时间戳
-                        $timestamp = floor($mtimestamp); // 时间戳
-                        $milliseconds = round(($mtimestamp - $timestamp) * 1000); // 毫秒
-                    } else {
-                        $timestamp = time();
-                        $milliseconds = 0;
-                    }
-                    if ($tmp === '%T') {
-                        $msg[] = date($this->datetime_format, (int)$timestamp) . '.' . (int)$milliseconds;
-                    } else {
-                        $msg[] = date($this->datetime_format, (int)$timestamp);
-                    }
+                    $timestamp = time();
+                    $milliseconds = 0;
+                    $msg[] = date($this->datetime_format, $timestamp);
                     break;
                 case '%Q':
                     $msg[] = ArrayHelper::getValue($template, $tmp, uniqid());
@@ -178,7 +172,9 @@ class LoggerConfig extends AbstractConfig
     {
         if (!empty($buffer)) {
             foreach ($this->targetList as $index => $target) {
-                $target->export($buffer);
+                rgo(function () use ($target, &$buffer) {
+                    $target->export($buffer);
+                });
             }
         }
     }

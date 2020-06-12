@@ -23,7 +23,7 @@ abstract class AbstractTarget implements InitInterface
     /** @var int */
     protected $batch = 100;
     /** @var float */
-    protected $waitTime = 0.05;
+    protected $waitTime = 1;
 
     /**
      * AbstractTarget constructor.
@@ -43,11 +43,12 @@ abstract class AbstractTarget implements InitInterface
     /**
      * @return array
      */
-    public function getLogs(): array
+    public function getLogs(Channel $channel = null): array
     {
+        $channel = $channel ?? $this->channel;
         $logs = [];
         for ($i = 0; $i < $this->batch; $i++) {
-            $log = $this->channel->pop($this->waitTime);
+            $log = $channel->pop($this->waitTime);
             if ($log === false) {
                 break;
             }

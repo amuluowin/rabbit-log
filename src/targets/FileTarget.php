@@ -8,14 +8,8 @@
 
 namespace rabbit\log\targets;
 
+use Co\Channel;
 use rabbit\App;
-use rabbit\compool\BaseCompool;
-use rabbit\compool\ComPoolInterface;
-use rabbit\compool\ComPoolProperties;
-use rabbit\contract\InitInterface;
-use rabbit\core\ObjectFactory;
-use rabbit\files\FileCom;
-use rabbit\files\FileHelper;
 use rabbit\helper\ArrayHelper;
 use rabbit\helper\StringHelper;
 
@@ -49,16 +43,23 @@ class FileTarget extends AbstractTarget
      * @var int
      */
     private $dirMode = 0775;
-    /** @var array */
-    private $pool = [];
-    /** @var ComPoolInterface[] */
     private $poolList = [];
+
+    public function __destruct()
+    {
+        foreach ($this->poolList as $file => [$channel, $fp, $lock]) {
+            if (is_resource($fp)) {
+                @fclose($fp);
+            }
+        }
+    }
 
     /**
      * @throws \rabbit\core\Exception
      */
     public function init(): void
     {
+        parent::init();
         if ($this->logFile === null) {
             $this->logFile = App::getAlias('@runtime') . '/logs/app.log';
         } else {
@@ -69,16 +70,6 @@ class FileTarget extends AbstractTarget
         }
         if ($this->maxFileSize < 1) {
             $this->maxFileSize = 1;
-        }
-        if (empty($this->pool)) {
-            $this->pool = [
-                'class' => BaseCompool::class,
-                'comClass' => FileCom::class,
-                'poolConfig' => ObjectFactory::createObject([
-                    'class' => ComPoolProperties::class,
-                    'count' => 10,
-                ], [], false)
-            ];
         }
         $logPath = dirname($this->logFile);
         FileHelper::createDirectory($logPath, $this->dirMode, true);
@@ -99,55 +90,52 @@ class FileTarget extends AbstractTarget
                 $fileInfo['filename'] = $module;
                 $file = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '.' . (isset($fileInfo['extension']) ? $fileInfo['extension'] : 'log');
             }
-            $key = md5($file);
-            if (!isset($this->poolList[$key])) {
-                $pool = ObjectFactory::createObject($this->pool, [], false);
-                $pool->getPoolConfig()->setConfig([
-                    'file' => $file,
-                    'option' => 'a+',
-                    'key' => 'file'
-                ]);
-                $this->poolList[$key] = $pool;
+            if (!isset($this->poolList[$file])) {
+                $channel = new Channel();
+                $this->poolList[$file] = $channel;
+                if (($fp = @fopen($file, 'a+')) === false) {
+                    throw new \InvalidArgumentException("Unable to append to log file: {$file}");
+                }
+                goloop(function () use ($file, $channel, $fp) {
+                    $logs = $this->getLogs($channel);
+                    if (empty($logs)) {
+                        return;
+                    }
+                    if ($this->fileMode !== null) {
+                        @chmod($file, $this->fileMode);
+                    }
+                    if ($this->enableRotation) {
+                        // clear stat cache to ensure getting the real current file size and not a cached one
+                        // this may result in rotating twice when cached file size is used on subsequent calls
+                        clearstatcache();
+                    }
+                    if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
+                        $this->rotateFiles($file);
+                    }
+                    @flock($fp, LOCK_EX);
+                    @fwrite($fp, implode("", $logs));
+                    @flock($fp, LOCK_UN);
+                });
             } else {
-                $pool = $this->poolList[$key];
+                $channel = $this->poolList[$file];
             }
-            if ($this->fileMode !== null) {
-                @chmod($file, $this->fileMode);
+            foreach ($message as $msg) {
+                if (is_string($msg)) {
+                    switch (ini_get('seaslog.appender')) {
+                        case '2':
+                        case '3':
+                            $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
+                            break;
+                    }
+                    $msg = explode($this->split, trim($msg));
+                }
+                if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
+                    continue;
+                }
+                ArrayHelper::remove($msg, '%c');
+                $msg = implode($this->split, $msg) . PHP_EOL;
+                $channel->push($msg);
             }
-            rgo(function () use ($file, $message, $pool) {
-                /** @var FileCom $fileCom */
-                $fileCom = $pool->getCom();
-                if ($this->enableRotation) {
-                    // clear stat cache to ensure getting the real current file size and not a cached one
-                    // this may result in rotating twice when cached file size is used on subsequent calls
-                    clearstatcache();
-                }
-                $text = '';
-                foreach ($message as $msg) {
-                    if (is_string($msg)) {
-                        switch (ini_get('seaslog.appender')) {
-                            case '2':
-                            case '3':
-                                $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
-                                break;
-                        }
-                        $msg = explode($this->split, trim($msg));
-                    }
-                    if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
-                        continue;
-                    }
-                    ArrayHelper::remove($msg, '%c');
-                    $text .= implode($this->split, $msg) . PHP_EOL;
-                }
-                if (!empty($text)) {
-                    $fileCom->lock(function () use ($file) {
-                        if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
-                            $this->rotateFiles($file);
-                        }
-                    });
-                    $fileCom->write($text);
-                }
-            });
         }
     }
 
