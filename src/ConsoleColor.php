@@ -9,10 +9,10 @@ namespace Rabbit\Log;
  */
 class ConsoleColor
 {
-    const FOREGROUND = 38,
-        BACKGROUND = 48;
+    const FOREGROUND = '38',
+        BACKGROUND = '48';
     const COLOR256_REGEXP = '~^(bg_)?color_([0-9]{1,3})$~';
-    const RESET_STYLE = 0;
+    const RESET_STYLE = '0';
     /** @var bool */
     private bool $isSupported;
     /** @var bool */

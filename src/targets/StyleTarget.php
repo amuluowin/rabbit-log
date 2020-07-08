@@ -83,7 +83,7 @@ class StyleTarget extends AbstractTarget
                 foreach ($msg as $index => $m) {
                     if (isset($this->colorTemplate[$index])) {
                         $color = $this->colorTemplate[$index];
-                        $m = trim($m);
+                        $m = is_string($m) ? trim($m) : (string)$m;
                         $level = trim($msg[$this->levelIndex]);
                         switch ($color) {
                             case self::COLOR_LEVEL:
