@@ -1,16 +1,19 @@
 <?php
+declare(strict_types=1);
 
+namespace Rabbit\Log\Targets;
 
-namespace rabbit\log\targets;
-
+use DI\DependencyException;
+use DI\NotFoundException;
+use Exception;
 use Psr\Log\LogLevel;
-use rabbit\helper\ArrayHelper;
-use rabbit\helper\StringHelper;
-use rabbit\log\ConsoleColor;
+use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\Base\Helper\StringHelper;
+use Rabbit\Log\ConsoleColor;
 
 /**
  * Class StyleTarget
- * @package rabbit\log\targets
+ * @package Rabbit\Log\Targets
  */
 class StyleTarget extends AbstractTarget
 {
@@ -18,9 +21,9 @@ class StyleTarget extends AbstractTarget
     const COLOR_DEFAULT = 'default';
     const COLOR_LEVEL = 'level';
     /** @var ConsoleColor */
-    private $color;
+    private ConsoleColor $color;
     /** @var array */
-    private $colorTemplate = [
+    private array $colorTemplate = [
         'magenta',
         self::COLOR_LEVEL,
         self::COLOR_LEVEL,
@@ -31,18 +34,20 @@ class StyleTarget extends AbstractTarget
         'dark_gray',
         self::COLOR_LEVEL
     ];
-    private $default = 'none';
+    private string $default = 'none';
     /** @var string */
-    private $splitColor = 'cyan';
+    private string $splitColor = 'cyan';
 
     /**
      * StyleTarget constructor.
      * @param string $split
+     * @throws DependencyException
+     * @throws NotFoundException
      */
     public function __construct(string $split = ' | ')
     {
         parent::__construct($split);
-        $this->color = new ConsoleColor();
+        $this->color = create(ConsoleColor::class);
     }
 
     /**
@@ -125,11 +130,11 @@ class StyleTarget extends AbstractTarget
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function write(): void
     {
-        goloop(function () {
+        loop(function () {
             $logs = $this->getLogs();
             if (!empty($logs)) {
                 echo implode("", $logs);

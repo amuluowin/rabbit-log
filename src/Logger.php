@@ -1,22 +1,22 @@
 <?php
+declare(strict_types=1);
 
-
-namespace rabbit\log;
+namespace Rabbit\Log;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use rabbit\contract\InitInterface;
+use Rabbit\Base\Contract\InitInterface;
 
 /**
  * Class Logger
- * @package rabbit\log
+ * @package Rabbit\Log
  */
 class Logger implements LoggerInterface, InitInterface
 {
     /** @var array */
-    protected $level = [];
+    protected array $level = [];
     /** @var AbstractConfig */
-    private $config;
+    private AbstractConfig $config;
 
     const CONTEXT_KEY = 'logger.default';
 

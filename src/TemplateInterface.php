@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace rabbit\log;
+namespace Rabbit\Log;
 
 /**
  * Interface TemplateInterface
- * @package rabbit\log
+ * @package Rabbit\Log
  */
 interface TemplateInterface
 {
     /**
      * @return array
      */
-    public function handle(): array ;
+    public function handle(): array;
 }

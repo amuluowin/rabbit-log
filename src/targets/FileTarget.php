@@ -1,17 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/10/23
- * Time: 16:38
- */
+declare(strict_types=1);
 
-namespace rabbit\log\targets;
+namespace Rabbit\Log\Targets;
 
 use Co\Channel;
-use rabbit\App;
-use rabbit\helper\ArrayHelper;
-use rabbit\helper\StringHelper;
+use Rabbit\Base\App;
+use Rabbit\Base\Core\Exception;
+use Rabbit\Base\Exception\NotSupportedException;
+use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\Base\Helper\FileHelper;
+use Rabbit\Base\Helper\StringHelper;
 
 /**
  * Class FileTarget
@@ -19,31 +17,13 @@ use rabbit\helper\StringHelper;
  */
 class FileTarget extends AbstractTarget
 {
-    /**
-     * @var string
-     */
-    private $logFile;
-    /**
-     * @var bool
-     */
-    private $enableRotation = true;
-    /**
-     * @var int
-     */
-    private $maxFileSize = 10240; // in KB
-    /**
-     * @var int
-     */
-    private $maxLogFiles = 5;
-    /**
-     * @var int
-     */
-    private $fileMode;
-    /**
-     * @var int
-     */
-    private $dirMode = 0775;
-    private $poolList = [];
+    private ?string $logFile = null;
+    private bool $enableRotation = true;
+    private int $maxFileSize = 10240; // in KB
+    private int $maxLogFiles = 5;
+    private ?int $fileMode = null;
+    private int $dirMode = 0775;
+    private array $poolList = [];
 
     public function __destruct()
     {
@@ -55,7 +35,7 @@ class FileTarget extends AbstractTarget
     }
 
     /**
-     * @throws \rabbit\core\Exception
+     * @throws Exception
      */
     public function init(): void
     {
@@ -77,8 +57,6 @@ class FileTarget extends AbstractTarget
 
     /**
      * @param array $messages
-     * @throws \DI\DependencyException
-     * @throws \DI\NotFoundException
      */
     public function export(array $messages): void
     {
@@ -96,7 +74,7 @@ class FileTarget extends AbstractTarget
                 if (($fp = @fopen($file, 'a+')) === false) {
                     throw new \InvalidArgumentException("Unable to append to log file: {$file}");
                 }
-                goloop(function () use ($file, $channel, $fp) {
+                loop(function () use ($file, $channel, $fp) {
                     $logs = $this->getLogs($channel);
                     if (empty($logs)) {
                         return;
@@ -139,9 +117,12 @@ class FileTarget extends AbstractTarget
         }
     }
 
+    /**
+     * @throws NotSupportedException
+     */
     protected function write(): void
     {
-
+        throw new NotSupportedException("FileTarget not support write func");
     }
 
 

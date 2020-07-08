@@ -1,31 +1,33 @@
 <?php
+declare(strict_types=1);
 
+namespace Rabbit\Log;
 
-namespace rabbit\log;
-
-use rabbit\contract\InitInterface;
+use Rabbit\Base\Contract\InitInterface;
+use Throwable;
+use Seaslog;
 
 /**
  * Class SeaslogConfig
- * @package rabbit\log
+ * @package Rabbit\Log
  */
 class SeaslogConfig extends AbstractConfig implements InitInterface
 {
     /** @var string */
-    private $appName = 'Rabbit';
+    private string $appName = 'Rabbit';
     /** @var Seaslog */
-    private $logger;
+    private Seaslog $logger;
 
     /**
      * SeaslogConfig constructor.
      * @param array $target
-     * @throws \Exception
+     * @throws Throwable
      */
-    public function __construct(array $target, float $tick = 0)
+    public function __construct(array $target)
     {
-        parent::__construct($target, $tick);
-        $this->appName = getDI('appName', false, 'Rabbit');
-        $this->logger = new \Seaslog();
+        parent::__construct($target);
+        $this->appName = (string)getDI('appName', false, 'Rabbit');
+        $this->logger = new Seaslog();
     }
 
     public function init()
@@ -60,7 +62,7 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
     }
 
     /**
-     * @param bool $flush
+     * @param array $buffer
      */
     public function flush(array $buffer): void
     {

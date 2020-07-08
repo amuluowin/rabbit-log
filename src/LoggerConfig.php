@@ -1,31 +1,33 @@
 <?php
+declare(strict_types=1);
 
+namespace Rabbit\Log;
 
-namespace rabbit\log;
-
-use rabbit\exception\InvalidConfigException;
-use rabbit\helper\ArrayHelper;
+use Exception;
+use Rabbit\Base\Exception\InvalidConfigException;
+use Rabbit\Base\Helper\ArrayHelper;
+use Throwable;
 
 /**
  * Class LoggerConfig
- * @package rabbit\log
+ * @package Rabbit\Log
  */
 class LoggerConfig extends AbstractConfig
 {
     /** @var string */
-    protected $datetime_format = "Y-m-d H:i:s";
+    protected string $datetime_format = "Y-m-d H:i:s";
     /** @var array */
-    protected $template;
+    protected ?array $template = null;
     /** @var string */
-    protected $split = ' | ';
+    protected string $split = ' | ';
     /** @var int */
-    protected $isMicrotime = 3;
+    protected int $isMicrotime = 3;
     /** @var string */
-    private $appName = 'Rabbit';
+    private string $appName = 'Rabbit';
     /** @var bool */
-    protected $useBasename = true;
+    protected bool $useBasename = true;
     /** @var array */
-    private static $supportTemplate = [
+    private static array $supportTemplate = [
         '%W',
         '%L',
         '%M',
@@ -47,8 +49,10 @@ class LoggerConfig extends AbstractConfig
     /**
      * LoggerConfig constructor.
      * @param array $target
+     * @param float $tick
      * @param array $template
      * @throws InvalidConfigException
+     * @throws Throwable
      */
     public function __construct(
         array $target,
@@ -56,14 +60,14 @@ class LoggerConfig extends AbstractConfig
         array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
     )
     {
-        parent::__construct($target, $tick);
+        parent::__construct($target);
         foreach ($template as $tmp) {
             if (!in_array($tmp, self::$supportTemplate)) {
                 throw new InvalidConfigException("$tmp not supported!");
             }
         }
         $this->template = $template;
-        $this->appName = getDI('appName', false, 'Rabbit');
+        $this->appName = (string)getDI('appName', false, 'Rabbit');
     }
 
     /**
@@ -78,7 +82,7 @@ class LoggerConfig extends AbstractConfig
      * @param string $level
      * @param string $message
      * @param array $context
-     * @throws \Exception
+     * @throws Exception
      */
     public function log(string $level, string $message, array $context = []): void
     {
@@ -103,7 +107,6 @@ class LoggerConfig extends AbstractConfig
                     break;
                 case '%t':
                     $timestamp = time();
-                    $milliseconds = 0;
                     $msg[] = date($this->datetime_format, $timestamp);
                     break;
                 case '%Q':
@@ -166,7 +169,7 @@ class LoggerConfig extends AbstractConfig
     }
 
     /**
-     * @param bool $flush
+     * @param array $buffer
      */
     public function flush(array $buffer = []): void
     {

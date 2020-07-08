@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 
-
-namespace rabbit\log\targets;
+namespace Rabbit\Log\Targets;
 
 use Co\Channel;
-use rabbit\contract\InitInterface;
+use Rabbit\Base\Contract\InitInterface;
 
 /**
  * Class AbstractTarget
@@ -13,17 +13,17 @@ use rabbit\contract\InitInterface;
 abstract class AbstractTarget implements InitInterface
 {
     /** @var string */
-    protected $split = ' | ';
+    protected string $split = ' | ';
     /** @var array */
-    protected $levelList = [];
+    protected array $levelList = [];
     /** @var int */
-    protected $levelIndex = 1;
+    protected int $levelIndex = 1;
     /** @var Channel */
-    protected $channel;
+    protected Channel $channel;
     /** @var int */
-    protected $batch = 100;
+    protected int $batch = 100;
     /** @var float */
-    protected $waitTime = 1;
+    protected float $waitTime = 1;
 
     /**
      * AbstractTarget constructor.
@@ -41,6 +41,7 @@ abstract class AbstractTarget implements InitInterface
     }
 
     /**
+     * @param Channel|null $channel
      * @return array
      */
     public function getLogs(Channel $channel = null): array
@@ -60,7 +61,6 @@ abstract class AbstractTarget implements InitInterface
 
     /**
      * @param array $messages
-     * @param bool $flush
      */
     abstract public function export(array $messages): void;
 

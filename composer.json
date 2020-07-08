@@ -3,8 +3,22 @@
   "description": "rabbit log",
   "type": "library",
   "require": {
-    "rabbit/framework": "^1.0",
-    "psr/log": "^1.0"
+    "php": ">=7.4.0",
+    "ext-swoole": ">=4.5.0",
+    "rabbit/base": "dev-master",
+    "psr/log": "^1.0",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "rabbit/rdkafka": "dev-master",
+    "rabbit/web": "dev-master",
+    "kwn/php-rdkafka-stubs": "^2.0",
+    "swoole/ide-helper": "@dev",
+    "phpunit/phpunit": "*"
+  },
+  "suggess": {
+    "ext-seaslog": ">=2.1.0 use seaslog",
+    "ext-rdkafka": "Use rdkafka"
   },
   "license": "MIT",
   "authors": [
@@ -15,7 +29,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "rabbit\\log\\": "src/"
+      "Rabbit\\Log\\": "src/"
     }
   }
 }

@@ -1,21 +1,20 @@
 <?php
 declare(strict_types=1);
 
-namespace rabbit\log\targets;
+namespace Rabbit\Log\Targets;
 
-use rabbit\helper\ArrayHelper;
+use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\Base\Helper\StringHelper;
 use Rabbit\Rdkafka\KafkaManager;
-use RdKafka\Producer;
-use RdKafka\ProducerTopic;
 
 /**
- * Class RdKafka
- * @package rabbit\log\targets
+ * Class RdKafkaTarget
+ * @package Rabbit\Log\Targets
  */
 class RdKafkaTarget extends AbstractTarget
 {
     /** @var array */
-    private $template = [
+    private array $template = [
         ['datetime', 'timespan'],
         ['level', 'string'],
         ['request_uri', 'string'],
@@ -26,37 +25,26 @@ class RdKafkaTarget extends AbstractTarget
         ['memoryusage', 'int'],
         ['message', 'string']
     ];
-    /** @var Producer */
-    private $producer;
     /** @var string */
-    private $key = 'kafka';
-    /** @var ProducerTopic */
-    private $topic = 'seaslog';
+    private string $producer;
+    /** @var string */
+    private string $key = 'kafka';
+    private string $topic = 'seaslog';
     /** @var int */
-    private $ack = 0;
-    /** @var float|int */
-    private $autoCommit = 1 * 1000;
+    private int $ack = 0;
+    /** @var float */
+    private float $autoCommit = 1 * 1000;
 
     /**
      * KafkaTarget constructor.
-     * @param Client $client
+     * @param string $producer
+     * @param string $key
      */
     public function __construct(string $producer, string $key = 'kafka')
     {
         parent::__construct();
         $this->producer = $producer;
         $this->key = $key;
-    }
-
-    public function init()
-    {
-        parent::init();
-        /** @var KafkaManager $kafka */
-        $kafka = getDI($this->key);
-        $this->topic = $kafka->getProducerTopic($this->producer, $this->topic, [
-            'acks' => $this->ack,
-            'auto.commit.interval.ms' => $this->autoCommit
-        ]);
     }
 
 
@@ -108,9 +96,16 @@ class RdKafkaTarget extends AbstractTarget
 
     public function write(): void
     {
-        goloop(function () {
+        loop(function () {
             $logs = $this->getLogs();
-            !empty($logs) && $this->topic->produce(RD_KAFKA_PARTITION_UA, 0, implode(',', $logs));
+            if (!empty($logs)) {
+                /** @var KafkaManager $kafka */
+                $kafka = getDI($this->key);
+                $kafka->product($kafka->getProducerTopic($this->producer, $this->topic, [
+                    'acks' => $this->ack,
+                    'auto.commit.interval.ms' => $this->autoCommit
+                ]), $kafka->getProducer($this->producer), RD_KAFKA_PARTITION_UA, 0, implode(',', $logs));
+            }
         });
     }
 }

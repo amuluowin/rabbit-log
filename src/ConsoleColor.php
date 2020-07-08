@@ -1,11 +1,11 @@
 <?php
+declare(strict_types=1);
 
-
-namespace rabbit\log;
+namespace Rabbit\Log;
 
 /**
  * Class ConsoleColor
- * @package rabbit\log
+ * @package Rabbit\Log
  */
 class ConsoleColor
 {
@@ -14,11 +14,11 @@ class ConsoleColor
     const COLOR256_REGEXP = '~^(bg_)?color_([0-9]{1,3})$~';
     const RESET_STYLE = 0;
     /** @var bool */
-    private $isSupported;
+    private bool $isSupported;
     /** @var bool */
-    private $forceStyle = false;
+    private bool $forceStyle = false;
     /** @var array */
-    private $styles = array(
+    private array $styles = array(
         'none' => null,
         'bold' => '1',
         'dark' => '2',
@@ -63,10 +63,11 @@ class ConsoleColor
         'bg_white' => '107',
     );
     /** @var array */
-    private $themes = array();
+    private array $themes = array();
 
     /**
      * ConsoleColor constructor.
+     * @param bool $forceStyle
      */
     public function __construct(bool $forceStyle = true)
     {
@@ -133,7 +134,7 @@ class ConsoleColor
     /**
      * @param array $themes
      */
-    public function setThemes(array $themes)
+    public function setThemes(array $themes): void
     {
         $this->themes = array();
         foreach ($themes as $name => $styles) {
@@ -145,7 +146,7 @@ class ConsoleColor
      * @param string $name
      * @param $styles
      */
-    public function addTheme(string $name, $styles)
+    public function addTheme(string $name, $styles): void
     {
         if (is_string($styles)) {
             $styles = array($styles);
@@ -181,7 +182,7 @@ class ConsoleColor
     /**
      * @param string $name
      */
-    public function removeTheme(string $name)
+    public function removeTheme(string $name): void
     {
         unset($this->themes[$name]);
     }
