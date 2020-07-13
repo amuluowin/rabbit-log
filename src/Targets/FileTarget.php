@@ -27,7 +27,7 @@ class FileTarget extends AbstractTarget
 
     public function __destruct()
     {
-        foreach ($this->poolList as $file => [$channel, $fp, $lock]) {
+        foreach ($this->poolList as $file => [$channel, $fp]) {
             if (is_resource($fp)) {
                 @fclose($fp);
             }
@@ -39,7 +39,6 @@ class FileTarget extends AbstractTarget
      */
     public function init(): void
     {
-        parent::init();
         if ($this->logFile === null) {
             $this->logFile = App::getAlias('@runtime') . '/logs/app.log';
         } else {
@@ -70,10 +69,11 @@ class FileTarget extends AbstractTarget
             }
             if (!isset($this->poolList[$file])) {
                 $channel = new Channel();
-                $this->poolList[$file] = $channel;
+                $this->poolList[$file] = [$channel];
                 if (($fp = @fopen($file, 'a+')) === false) {
                     throw new \InvalidArgumentException("Unable to append to log file: {$file}");
                 }
+                $this->poolList[$file][] = $fp;
                 loop(function () use ($file, $channel, $fp) {
                     $logs = $this->getLogs($channel);
                     if (empty($logs)) {
@@ -95,7 +95,7 @@ class FileTarget extends AbstractTarget
                     @flock($fp, LOCK_UN);
                 });
             } else {
-                $channel = $this->poolList[$file];
+                [$channel] = $this->poolList[$file];
             }
             foreach ($message as $msg) {
                 if (is_string($msg)) {

@@ -25,7 +25,7 @@ class LoggerConfig extends AbstractConfig
     /** @var string */
     private string $appName = 'Rabbit';
     /** @var bool */
-    protected bool $useBasename = true;
+    protected bool $useBasename = false;
     /** @var array */
     private static array $supportTemplate = [
         '%W',
@@ -129,11 +129,11 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = ArrayHelper::getValue(
                         $template,
                         $tmp,
-                        isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/'
+                        isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '/'
                     );
                     break;
                 case '%m':
-                    $msg[] = strtoupper(ArrayHelper::getValue($template, $tmp, 'unknow'));
+                    $msg[] = strtolower(ArrayHelper::getValue($template, $tmp, ArrayHelper::getValue($_SERVER, 'SHELL', 'unknow')));
                     break;
                 case '%I':
                     $msg[] = ArrayHelper::getValue($template, $tmp, current(swoole_get_local_ip()));
@@ -147,7 +147,9 @@ class LoggerConfig extends AbstractConfig
                     );
                     if ($tmp === '%F') {
                         $trace = $trace[$this->recall_depth];
-                        $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] : $trace['file'] . ':' . $trace['line'];
+                        $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] :
+                            (isset($_SERVER['PWD']) ? str_replace($_SERVER['PWD'] . '/', '', $trace['file']) :
+                                $trace['file']) . ':' . $trace['line'];
                     } else {
                         $trace = $trace[$this->recall_depth + 1];
                         $msg[] = $trace['class'] . $trace['type'] . $trace['function'];
