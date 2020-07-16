@@ -35,7 +35,7 @@ abstract class AbstractTarget implements InitInterface
         $this->channel = new Channel();
     }
 
-    public function init()
+    public function init(): void
     {
         $this->write();
     }

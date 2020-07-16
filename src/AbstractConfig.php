@@ -17,7 +17,7 @@ abstract class AbstractConfig implements InitInterface
     /** @var int */
     protected int $recall_depth = 0;
     /** @var TemplateInterface */
-    protected ?TemplateInterface $userTemplate=null;
+    protected ?TemplateInterface $userTemplate = null;
 
     /**
      * AbstractConfig constructor.
@@ -28,7 +28,7 @@ abstract class AbstractConfig implements InitInterface
         $this->targetList = $target;
     }
 
-    public function init()
+    public function init(): void
     {
         foreach ($this->targetList as $target) {
             $target->init();

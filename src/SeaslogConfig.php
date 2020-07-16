@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Rabbit\Log;
 
 use Rabbit\Base\Contract\InitInterface;
-use Throwable;
 use Seaslog;
+use Throwable;
 
 /**
  * Class SeaslogConfig
@@ -30,7 +30,7 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
         $this->logger = new Seaslog();
     }
 
-    public function init()
+    public function init(): void
     {
         ini_set('seaslog.recall_depth', $this->recall_depth);
     }

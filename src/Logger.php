@@ -29,7 +29,7 @@ class Logger implements LoggerInterface, InitInterface
         $this->config = $config;
     }
 
-    public function init()
+    public function init(): void
     {
         if ($this->config instanceof InitInterface) {
             $this->config->init();
