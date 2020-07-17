@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Rabbit\Log;
 
 use Exception;
+use Rabbit\Base\App;
 use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Base\Helper\ArrayHelper;
 use Throwable;
@@ -129,7 +130,7 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = ArrayHelper::getValue(
                         $template,
                         $tmp,
-                        isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '/'
+                        isset($_SERVER['SCRIPT_FILENAME']) ? str_replace(App::getAlias('@root', false) . '/', '', $_SERVER['SCRIPT_FILENAME']) : '/'
                     );
                     break;
                 case '%m':
@@ -148,7 +149,7 @@ class LoggerConfig extends AbstractConfig
                     if ($tmp === '%F') {
                         $trace = $trace[$this->recall_depth];
                         $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] :
-                            (isset($_SERVER['PWD']) ? str_replace($_SERVER['PWD'] . '/', '', $trace['file']) :
+                            (($path = App::getAlias('@root', false)) ? str_replace($path . '/', '', $trace['file']) :
                                 $trace['file']) . ':' . $trace['line'];
                     } else {
                         $trace = $trace[$this->recall_depth + 1];
