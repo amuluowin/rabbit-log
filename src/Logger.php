@@ -175,7 +175,7 @@ class Logger implements LoggerInterface, InitInterface
                 $this->config->log($level, $message, $context);
             } elseif (is_array($message)) {
                 foreach ($message as $m) {
-                    $this->config->log($level, $m, $context);
+                    $this->config->log($level, (string)$m, $context);
                 }
             }
         }

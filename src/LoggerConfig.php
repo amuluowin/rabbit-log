@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Rabbit\Log;
 
-use Exception;
 use Rabbit\Base\App;
 use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Base\Helper\ArrayHelper;
@@ -84,7 +83,7 @@ class LoggerConfig extends AbstractConfig
      * @param string $level
      * @param string $message
      * @param array $context
-     * @throws Exception
+     * @throws Throwable
      */
     public function log(string $level, string $message, array $context = []): void
     {
