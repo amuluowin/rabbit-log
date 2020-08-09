@@ -7,6 +7,7 @@ use Exception;
 use Rabbit\Base\App;
 use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\Base\Helper\ExceptionHelper;
 use Throwable;
 
 /**
@@ -165,7 +166,7 @@ class LoggerConfig extends AbstractConfig
             }
         }
         $color = ArrayHelper::getValue($template, '%c');
-        $color && $msg['%c'] = $color;
+        $color !== null && $msg['%c'] = $color;
         $key = $this->appName . '_' . ArrayHelper::getValue($context, 'module', 'system');
         $buffer[$key][] = $msg;
         $this->flush($buffer);
@@ -173,13 +174,18 @@ class LoggerConfig extends AbstractConfig
 
     /**
      * @param array $buffer
+     * @throws Throwable
      */
     public function flush(array $buffer = []): void
     {
         if (!empty($buffer)) {
             foreach ($this->targetList as $index => $target) {
-                rgo(function () use ($target, &$buffer) {
-                    $target->export($buffer);
+                go(function () use ($target, &$buffer) {
+                    try {
+                        $target->export($buffer);
+                    } catch (Throwable $exception) {
+                        print_r(ExceptionHelper::convertExceptionToArray($exception));
+                    }
                 });
             }
         }
