@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Log;
 
-use Rabbit\Base\Contract\InitInterface;
 use Rabbit\Log\Targets\AbstractTarget;
+use Rabbit\Base\Contract\InitInterface;
 
 /**
  * Class AbstractConfig
@@ -59,5 +60,5 @@ abstract class AbstractConfig implements InitInterface
     /**
      * @param array $buffer
      */
-    abstract public function flush(array $buffer): void;
+    abstract public function flush(array $buffer = []): void;
 }

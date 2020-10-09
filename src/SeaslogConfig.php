@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Log;
 
-use Rabbit\Base\Contract\InitInterface;
-use Rabbit\Base\Helper\ExceptionHelper;
 use Seaslog;
 use Throwable;
+use Rabbit\Base\Contract\InitInterface;
+use Rabbit\Base\Helper\ExceptionHelper;
 
 /**
  * Class SeaslogConfig
@@ -66,7 +67,7 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
      * @param array $buffer
      * @throws Throwable
      */
-    public function flush(array $buffer): void
+    public function flush(array $buffer = []): void
     {
         $this->logger->flushBuffer(0);
         foreach ($this->targetList as $index => $target) {
