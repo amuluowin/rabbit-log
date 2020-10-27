@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Log\Targets;
 
+use Exception;
 use Psr\Log\LogLevel;
 use DI\NotFoundException;
 use DI\DependencyException;
@@ -103,7 +104,7 @@ class StyleTarget extends AbstractTarget
                     }
                 }
                 if (!empty($context)) {
-                    echo implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL;
+                    $this->channel->push(implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL);
                 }
             }
         }
@@ -127,5 +128,18 @@ class StyleTarget extends AbstractTarget
             default:
                 return 'light_red';
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function write(): void
+    {
+        loop(function () {
+            $logs = $this->getLogs();
+            if (!empty($logs)) {
+                echo implode("", $logs);
+            }
+        });
     }
 }

@@ -18,6 +18,9 @@ abstract class AbstractTarget implements InitInterface
     protected array $levelList = [];
     /** @var int */
     protected int $levelIndex = 1;
+    protected $channel;
+    /** @var int */
+    protected int $batch = 100;
     /** @var float */
     protected float $waitTime = 1;
 
@@ -28,10 +31,30 @@ abstract class AbstractTarget implements InitInterface
     public function __construct(string $split = ' | ')
     {
         $this->split = $split;
+        $this->channel = makeChannel();
     }
 
     public function init(): void
     {
+        $this->write();
+    }
+
+    /**
+     * @param Channel|null $channel
+     * @return array
+     */
+    public function getLogs($channel = null): array
+    {
+        $channel = $channel ?? $this->channel;
+        $logs = [];
+        for ($i = 0; $i < $this->batch; $i++) {
+            $log = $channel->pop((int)$this->waitTime);
+            if ($log === false) {
+                break;
+            }
+            $logs[] = $log;
+        }
+        return $logs;
     }
 
 
@@ -39,4 +62,6 @@ abstract class AbstractTarget implements InitInterface
      * @param array $messages
      */
     abstract public function export(array $messages): void;
+
+    abstract protected function write(): void;
 }
