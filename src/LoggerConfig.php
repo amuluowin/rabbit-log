@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Log;
 
+use Throwable;
 use Rabbit\Base\App;
-use Rabbit\Base\Exception\InvalidConfigException;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Helper\ExceptionHelper;
-use Throwable;
+use Rabbit\Base\Exception\InvalidConfigException;
 
 /**
  * Class LoggerConfig
@@ -59,8 +60,7 @@ class LoggerConfig extends AbstractConfig
         array $target,
         float $tick = 0,
         array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
-    )
-    {
+    ) {
         parent::__construct($target);
         foreach ($template as $tmp) {
             if (!in_array($tmp, self::$supportTemplate)) {
@@ -141,16 +141,11 @@ class LoggerConfig extends AbstractConfig
                     break;
                 case '%F':
                 case '%C':
-                    $trace = \Co::getBackTrace(
-                        \Co::getCid(),
-                        DEBUG_BACKTRACE_IGNORE_ARGS,
-                        $this->recall_depth + 2
-                    );
+                    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $this->recall_depth);
                     if ($tmp === '%F') {
-                        $trace = $trace[$this->recall_depth];
-                        $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] :
-                            (($path = App::getAlias('@root', false)) ? str_replace($path . '/', '', $trace['file']) :
-                                $trace['file']) . ':' . $trace['line'];
+                        $trace = $trace[$this->recall_depth] ?? end($trace);
+                        $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] : (($path = App::getAlias('@root', false)) ? str_replace($path . '/', '', $trace['file']) :
+                            $trace['file']) . ':' . $trace['line'];
                     } else {
                         $trace = $trace[$this->recall_depth + 1];
                         $msg[] = $trace['class'] . $trace['type'] . $trace['function'];
