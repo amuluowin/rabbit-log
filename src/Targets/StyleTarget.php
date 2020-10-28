@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rabbit\Log\Targets;
 
+use Exception;
 use Psr\Log\LogLevel;
 use DI\NotFoundException;
 use DI\DependencyException;
@@ -38,6 +39,7 @@ class StyleTarget extends AbstractTarget
     /** @var string */
     private string $splitColor = 'cyan';
 
+    private $stdout;
     /**
      * StyleTarget constructor.
      * @param string $split
@@ -48,6 +50,11 @@ class StyleTarget extends AbstractTarget
     {
         parent::__construct($split);
         $this->color = create(ConsoleColor::class);
+    }
+
+    public function __destruct()
+    {
+        $this->stdout && fclose($this->stdout);
     }
 
     /**
@@ -103,7 +110,7 @@ class StyleTarget extends AbstractTarget
                     }
                 }
                 if (!empty($context)) {
-                    echo implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL;
+                    $this->channel->push(implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL);
                 }
             }
         }
@@ -129,7 +136,17 @@ class StyleTarget extends AbstractTarget
         }
     }
 
+    /**
+     * @throws Exception
+     */
     protected function write(): void
     {
+        $this->stdout = fopen('php://stdout', 'w');
+        loop(function () {
+            $logs = $this->getLogs();
+            if (!empty($logs)) {
+                fwrite($this->stdout, implode("", $logs));
+            }
+        });
     }
 }
