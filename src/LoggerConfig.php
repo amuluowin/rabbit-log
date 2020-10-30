@@ -173,8 +173,8 @@ class LoggerConfig extends AbstractConfig
     public function flush(array $buffer = []): void
     {
         if (!empty($buffer)) {
-            foreach ($this->targetList as $index => $target) {
-                go(function () use ($target, &$buffer) {
+            foreach ($this->targetList as $target) {
+                rgo(function () use ($target, &$buffer) {
                     try {
                         $target->export($buffer);
                     } catch (Throwable $exception) {
