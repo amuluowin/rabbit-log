@@ -110,7 +110,7 @@ class StyleTarget extends AbstractTarget
                     }
                 }
                 if (!empty($context)) {
-                    $this->channel->push(implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL);
+                    fwrite($this->stdout, implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL);
                 }
             }
         }
@@ -142,11 +142,5 @@ class StyleTarget extends AbstractTarget
     protected function write(): void
     {
         $this->stdout = fopen('php://stdout', 'w');
-        loop(function () {
-            $logs = $this->getLogs();
-            if (!empty($logs)) {
-                fwrite($this->stdout, implode("", $logs));
-            }
-        });
     }
 }
