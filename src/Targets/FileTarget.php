@@ -27,7 +27,7 @@ class FileTarget extends AbstractTarget
 
     public function __destruct()
     {
-        foreach ($this->poolList as $file => [$channel, $fp]) {
+        foreach ($this->poolList as $file => $fp) {
             if (is_resource($fp)) {
                 @fclose($fp);
             }
@@ -52,6 +52,7 @@ class FileTarget extends AbstractTarget
         }
         $logPath = dirname($this->logFile);
         FileHelper::createDirectory($logPath, $this->dirMode, true);
+        parent::init();
     }
 
     /**
@@ -68,34 +69,10 @@ class FileTarget extends AbstractTarget
                 $file = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '.' . (isset($fileInfo['extension']) ? $fileInfo['extension'] : 'log');
             }
             if (!isset($this->poolList[$file])) {
-                $channel = makeChannel();
-                $this->poolList[$file] = [$channel];
-                if (($fp = @fopen($file, 'a+')) === false) {
+                $this->poolList[$file] = true;
+                if (($this->poolList[$file] = @fopen($file, 'a+')) === false) {
                     throw new \InvalidArgumentException("Unable to append to log file: {$file}");
                 }
-                $this->poolList[$file][] = $fp;
-                loop(function () use ($file, $channel, $fp) {
-                    $logs = $this->getLogs($channel);
-                    if (empty($logs)) {
-                        return;
-                    }
-                    if ($this->fileMode !== null) {
-                        @chmod($file, $this->fileMode);
-                    }
-                    if ($this->enableRotation) {
-                        // clear stat cache to ensure getting the real current file size and not a cached one
-                        // this may result in rotating twice when cached file size is used on subsequent calls
-                        clearstatcache();
-                    }
-                    if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
-                        $this->rotateFiles($file);
-                    }
-                    @flock($fp, LOCK_EX);
-                    @fwrite($fp, implode("", $logs));
-                    @flock($fp, LOCK_UN);
-                });
-            } else {
-                [$channel] = $this->poolList[$file];
             }
             foreach ($message as $msg) {
                 if (is_string($msg)) {
@@ -111,8 +88,8 @@ class FileTarget extends AbstractTarget
                     continue;
                 }
                 ArrayHelper::remove($msg, '%c');
-                $msg = implode($this->split, $msg) . PHP_EOL;
-                $channel->push($msg);
+                $msg = implode($this->split, $msg);
+                $this->channel->push(['file' => $file, 'msg' => $msg]);
             }
         }
     }
@@ -122,7 +99,29 @@ class FileTarget extends AbstractTarget
      */
     protected function write(): void
     {
-        throw new NotSupportedException("FileTarget not support write func");
+        loop(function () {
+            $logs = $this->getLogs();
+            if (empty($logs)) {
+                return;
+            }
+            $logs = ArrayHelper::index($logs, null, 'file');
+            wgeach($logs, function ($file, $msg) {
+                if ($this->fileMode !== null) {
+                    @chmod($file, $this->fileMode);
+                }
+                if ($this->enableRotation) {
+                    clearstatcache();
+                }
+                if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
+                    $this->rotateFiles($file);
+                }
+                $fp = $this->poolList[$file];
+                $msg = array_column($msg, 'msg');
+                @flock($fp, LOCK_EX);
+                @fwrite($fp, implode(PHP_EOL, $msg));
+                @flock($fp, LOCK_UN);
+            });
+        });
     }
 
 
