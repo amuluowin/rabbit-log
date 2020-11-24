@@ -21,9 +21,7 @@ class StyleTarget extends AbstractTarget
     const COLOR_RANDOM = 'random';
     const COLOR_DEFAULT = 'default';
     const COLOR_LEVEL = 'level';
-    /** @var ConsoleColor */
     private ConsoleColor $color;
-    /** @var array */
     private array $colorTemplate = [
         'magenta',
         self::COLOR_LEVEL,
@@ -36,10 +34,16 @@ class StyleTarget extends AbstractTarget
         self::COLOR_LEVEL
     ];
     private string $default = 'none';
-    /** @var string */
     private string $splitColor = 'cyan';
 
     private $stdout;
+
+    protected array $colorMap = [
+        LogLevel::INFO => 'green',
+        LogLevel::DEBUG => 'dark_gray',
+        LogLevel::WARNING => 'yellow',
+        LogLevel::ERROR => 'red'
+    ];
     /**
      * StyleTarget constructor.
      * @param string $split
@@ -122,18 +126,7 @@ class StyleTarget extends AbstractTarget
      */
     private function getLevelColor(string $level): string
     {
-        switch (strtolower($level)) {
-            case LogLevel::INFO:
-                return "green";
-            case LogLevel::DEBUG:
-                return 'dark_gray';
-            case LogLevel::ERROR:
-                return "red";
-            case LogLevel::WARNING:
-                return 'yellow';
-            default:
-                return 'light_red';
-        }
+        return $this->colorMap[strtolower($level)] ?? 'light_red';
     }
 
     /**
