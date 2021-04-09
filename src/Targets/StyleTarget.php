@@ -56,11 +56,6 @@ class StyleTarget extends AbstractTarget
         $this->color = create(ConsoleColor::class);
     }
 
-    public function __destruct()
-    {
-        $this->stdout && fclose($this->stdout);
-    }
-
     /**
      * @param array $messages
      */
@@ -114,7 +109,7 @@ class StyleTarget extends AbstractTarget
                     }
                 }
                 if (!empty($context)) {
-                    fwrite($this->stdout, implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL);
+                    fwrite(STDOUT, implode(' ' . $this->color->apply($this->splitColor, '|') . ' ', $context) . PHP_EOL);
                 }
             }
         }
@@ -129,11 +124,7 @@ class StyleTarget extends AbstractTarget
         return $this->colorMap[strtolower($level)] ?? 'light_red';
     }
 
-    /**
-     * @throws Exception
-     */
     protected function write(): void
     {
-        $this->stdout = fopen('php://stdout', 'w');
     }
 }
