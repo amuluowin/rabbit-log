@@ -48,6 +48,8 @@ class LoggerConfig extends AbstractConfig
         '%C'
     ];
 
+    private int $pid = 0;
+
     /**
      * LoggerConfig constructor.
      * @param array $target
@@ -69,6 +71,7 @@ class LoggerConfig extends AbstractConfig
         }
         $this->template = $template;
         $this->appName = (string)getDI('appName', false, 'Rabbit');
+        $this->pid = getmypid();
     }
 
     /**
@@ -144,12 +147,13 @@ class LoggerConfig extends AbstractConfig
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $this->recall_depth);
                     if ($tmp === '%F') {
                         $trace = $trace[$this->recall_depth] ?? end($trace);
-                        $msg[] = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] : (($path = App::getAlias('@root', false)) ? str_replace($path . '/', '', $trace['file']) :
+                        $file = $this->useBasename ? basename($trace['file']) . ':' . $trace['line'] : (($path = App::getAlias('@root', false)) ? str_replace($path . '/', '', $trace['file']) :
                             $trace['file']) . ':' . $trace['line'];
                     } else {
                         $trace = $trace[$this->recall_depth + 1];
-                        $msg[] = $trace['class'] . $trace['type'] . $trace['function'];
+                        $file = $trace['class'] . $trace['type'] . $trace['function'];
                     }
+                    $msg[] = "pid:{$this->pid}@{$file}";
                     break;
                 case '%U':
                     $msg[] = memory_get_usage();
