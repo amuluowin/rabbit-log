@@ -156,10 +156,10 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = "pid:{$this->pid}@{$file}";
                     break;
                 case '%U':
-                    $msg[] = memory_get_usage();
+                    $msg[] = memory_get_usage(false);
                     break;
                 case '%u':
-                    $msg[] = memory_get_peak_usage();
+                    $msg[] = memory_get_peak_usage(false);
                     break;
             }
         }
