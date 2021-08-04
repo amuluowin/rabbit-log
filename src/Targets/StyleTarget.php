@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rabbit\Log\Targets;
 
-use Exception;
 use Psr\Log\LogLevel;
 use DI\NotFoundException;
 use DI\DependencyException;
@@ -35,8 +34,6 @@ class StyleTarget extends AbstractTarget
     ];
     private string $default = 'none';
     private string $splitColor = 'cyan';
-
-    private $stdout;
 
     protected array $colorMap = [
         LogLevel::INFO => 'green',
