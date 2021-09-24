@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rabbit\Log\Targets;
 
 use Rabbit\Base\Contract\InitInterface;
+use Rabbit\Base\Core\Channel;
 
 /**
  * Class AbstractTarget
@@ -18,7 +19,7 @@ abstract class AbstractTarget implements InitInterface
     protected array $levelList = [];
     /** @var int */
     protected int $levelIndex = 1;
-    protected $channel;
+    protected Channel $channel;
     /** @var int */
     protected int $batch = 100;
     /** @var float */
@@ -31,7 +32,7 @@ abstract class AbstractTarget implements InitInterface
     public function __construct(string $split = ' | ')
     {
         $this->split = $split;
-        $this->channel = makeChannel();
+        $this->channel = new Channel();
     }
 
     public function init(): void
