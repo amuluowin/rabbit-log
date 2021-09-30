@@ -28,6 +28,7 @@ class LoggerConfig extends AbstractConfig
     private string $appName = 'Rabbit';
     /** @var bool */
     protected bool $useBasename = false;
+    protected bool $realMem = true;
     /** @var array */
     private static array $supportTemplate = [
         '%W',
@@ -60,7 +61,7 @@ class LoggerConfig extends AbstractConfig
      */
     public function __construct(
         array $target,
-        float $tick = 0,
+        bool $realMem = true,
         array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
     ) {
         parent::__construct($target);
@@ -72,6 +73,7 @@ class LoggerConfig extends AbstractConfig
         $this->template = $template;
         $this->appName = (string)getDI('appName', false, 'Rabbit');
         $this->pid = getmypid();
+        $this->realMem = $realMem;
     }
 
     /**
@@ -156,10 +158,10 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = "pid:{$this->pid}@{$file}";
                     break;
                 case '%U':
-                    $msg[] = memory_get_usage(false);
+                    $msg[] = memory_get_usage($this->realMem);
                     break;
                 case '%u':
-                    $msg[] = memory_get_peak_usage(false);
+                    $msg[] = memory_get_peak_usage($this->realMem);
                     break;
             }
         }
