@@ -9,9 +9,7 @@
     "ext-json": "*"
   },
   "require-dev": {
-    "rabbit/rdkafka": "dev-master",
     "rabbit/web": "dev-master",
-    "kwn/php-rdkafka-stubs": "^2.0",
     "swoole/ide-helper": "@dev",
     "phpunit/phpunit": "*"
   },
