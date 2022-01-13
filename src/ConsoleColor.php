@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Log;
@@ -97,7 +98,7 @@ class ConsoleColor
         $sequences = array();
         foreach ($style as $s) {
             if (isset($this->themes[$s])) {
-                $sequences = array_merge($sequences, $this->themeSequence($s));
+                $sequences = [...$sequences, ...$this->themeSequence($s)];
             } else {
                 if ($this->isValidStyle($s)) {
                     $sequences[] = $this->styleSequence($s);
