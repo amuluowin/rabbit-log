@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\Log;
@@ -13,10 +14,7 @@ use Rabbit\Base\Contract\InitInterface;
  */
 class Logger implements LoggerInterface, InitInterface
 {
-    /** @var array */
     protected array $level = [];
-    /** @var AbstractConfig */
-    private AbstractConfig $config;
 
     const CONTEXT_KEY = 'logger.default';
 
@@ -24,9 +22,8 @@ class Logger implements LoggerInterface, InitInterface
      * Logger constructor.
      * @param AbstractConfig $config
      */
-    public function __construct(AbstractConfig $config)
+    public function __construct(private AbstractConfig $config)
     {
-        $this->config = $config;
     }
 
     public function init(): void

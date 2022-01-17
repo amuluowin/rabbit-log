@@ -60,11 +60,10 @@ class LoggerConfig extends AbstractConfig
      * @throws Throwable
      */
     public function __construct(
-        array $target,
+        protected array $targetList,
         bool $realMem = true,
         array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
     ) {
-        parent::__construct($target);
         foreach ($template as $tmp) {
             if (!in_array($tmp, self::$supportTemplate)) {
                 throw new InvalidConfigException("$tmp not supported!");

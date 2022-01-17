@@ -13,20 +13,15 @@ use Rabbit\Base\Contract\InitInterface;
  */
 abstract class AbstractConfig implements InitInterface
 {
-    /** @var AbstractTarget[] */
-    protected array $targetList = [];
-    /** @var int */
     protected int $recall_depth = 0;
-    /** @var TemplateInterface */
     protected ?TemplateInterface $userTemplate = null;
 
     /**
      * AbstractConfig constructor.
      * @param array $target
      */
-    public function __construct(array $target)
+    public function __construct(protected array $targetList)
     {
-        $this->targetList = $target;
     }
 
     public function init(): void
