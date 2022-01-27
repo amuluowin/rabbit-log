@@ -143,32 +143,22 @@ class FileTarget extends AbstractTarget
                 $newFile = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '-f' . ($i + 1) . '.' . $fileInfo['extension'];
                 $this->rotateByCopy($rotateFile, $newFile);
                 if ($i === 0) {
-                    $this->clearLogFile($rotateFile);
+                    $this->clearLogFile($file);
                 }
             }
         }
     }
 
-    /***
-     * Clear log file without closing any other process open handles
-     * @param string $rotateFile
-     */
-    private function clearLogFile($rotateFile)
+    private function clearLogFile(string $file): void
     {
-        if ($filePointer = @fopen($rotateFile, 'a')) {
+        if ($filePointer = $this->poolList[$file] ?? false) {
             @flock($filePointer, LOCK_EX);
             @ftruncate($filePointer, 0);
             @flock($filePointer, LOCK_UN);
-            @fclose($filePointer);
         }
     }
 
-    /***
-     * Copy rotated file into new file
-     * @param string $rotateFile
-     * @param string $newFile
-     */
-    private function rotateByCopy($rotateFile, $newFile)
+    private function rotateByCopy(string $rotateFile, string $newFile): void
     {
         @copy($rotateFile, $newFile);
         if ($this->fileMode !== null) {
