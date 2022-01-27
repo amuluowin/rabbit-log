@@ -11,10 +11,6 @@ use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Helper\StringHelper;
 use Rabbit\Base\Exception\NotSupportedException;
 
-/**
- * Class FileTarget
- * @package rabbit\log\targets
- */
 class FileTarget extends AbstractTarget
 {
     private ?string $logFile = null;
@@ -27,7 +23,7 @@ class FileTarget extends AbstractTarget
 
     public function __destruct()
     {
-        foreach ($this->poolList as $file => $fp) {
+        foreach ($this->poolList as $fp) {
             if (is_resource($fp)) {
                 @fclose($fp);
             }
@@ -99,13 +95,13 @@ class FileTarget extends AbstractTarget
      */
     protected function write(): void
     {
-        loop(function () {
+        loop(function (): void {
             $logs = $this->getLogs();
             if (empty($logs)) {
                 return;
             }
             $logs = ArrayHelper::index($logs, null, 'file');
-            wgeach($logs, function ($file, $msg) {
+            wgeach($logs, function (string $file, array $msg): void {
                 if ($this->fileMode !== null) {
                     @chmod($file, $this->fileMode);
                 }

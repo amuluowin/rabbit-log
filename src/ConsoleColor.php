@@ -107,7 +107,7 @@ class ConsoleColor
                 }
             }
         }
-        $sequences = array_filter($sequences, function ($val) {
+        $sequences = array_filter($sequences, function (mixed $val): bool {
             return $val !== null;
         });
         if (empty($sequences)) {
