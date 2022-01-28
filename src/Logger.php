@@ -30,47 +30,47 @@ class Logger implements LoggerInterface, InitInterface
         return $this->config;
     }
 
-    public function emergency(string|\Stringable $message, array $context = []): void
+    public function emergency($message, array $context = []): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
-    public function alert(string|\Stringable $message, array $context = []): void
+    public function alert($message, array $context = []): void
     {
         $this->log(LogLevel::ALERT, $message, $context);
     }
 
-    public function critical(string|\Stringable $message, array $context = []): void
+    public function critical($message, array $context = []): void
     {
         $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
-    public function error(string|\Stringable $message, array $context = []): void
+    public function error($message, array $context = []): void
     {
         $this->log(LogLevel::ERROR, $message, $context);
     }
 
-    public function warning(string|\Stringable $message, array $context = []): void
+    public function warning($message, array $context = []): void
     {
         $this->log(LogLevel::WARNING, $message, $context);
     }
 
-    public function notice(string|\Stringable $message, array $context = []): void
+    public function notice($message, array $context = []): void
     {
         $this->log(LogLevel::NOTICE, $message, $context);
     }
 
-    public function info(string|\Stringable $message, array $context = []): void
+    public function info($message, array $context = []): void
     {
         $this->log(LogLevel::INFO, $message, $context);
     }
 
-    public function debug(string|\Stringable $message, array $context = []): void
+    public function debug($message, array $context = []): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
 
-    public function log($level, string|\Stringable $message, array $context = []): void
+    public function log($level, $message, array $context = []): void
     {
         if (empty($this->level) || in_array($level, $this->level)) {
             if (is_string($message)) {

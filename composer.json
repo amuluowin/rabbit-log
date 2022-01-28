@@ -5,7 +5,7 @@
   "require": {
     "php": ">=8.1.0",
     "rabbit/base": "dev-master",
-    "psr/log": "^3.0",
+    "psr/log": "^1.0",
     "ext-json": "*"
   },
   "require-dev": {
