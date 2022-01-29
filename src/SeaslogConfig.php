@@ -27,7 +27,7 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
      */
     public function __construct(protected array $targetList,)
     {
-        $this->appName = (string)getDI('appName', false, 'Rabbit');
+        $this->appName = (string)service('appName', false, 'Rabbit');
         $this->logger = new Seaslog();
     }
 

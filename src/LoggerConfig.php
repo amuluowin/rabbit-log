@@ -70,7 +70,7 @@ class LoggerConfig extends AbstractConfig
             }
         }
         $this->template = $template;
-        $this->appName = (string)getDI('appName', false, 'Rabbit');
+        $this->appName = (string)config('appName', 'Rabbit');
         $this->pid = getmypid();
         $this->realMem = $realMem;
     }
