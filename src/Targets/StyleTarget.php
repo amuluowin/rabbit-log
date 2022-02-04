@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace Rabbit\Log\Targets;
 
 use Psr\Log\LogLevel;
-use DI\NotFoundException;
-use DI\DependencyException;
 use Rabbit\Log\ConsoleColor;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Helper\StringHelper;
 
-/**
- * Class StyleTarget
- * @package Rabbit\Log\Targets
- */
 class StyleTarget extends AbstractTarget
 {
     const COLOR_RANDOM = 'random';
@@ -41,21 +35,13 @@ class StyleTarget extends AbstractTarget
         LogLevel::WARNING => 'yellow',
         LogLevel::ERROR => 'red'
     ];
-    /**
-     * StyleTarget constructor.
-     * @param string $split
-     * @throws DependencyException
-     * @throws NotFoundException
-     */
+
     public function __construct(string $split = ' | ')
     {
         parent::__construct($split);
         $this->color = create(ConsoleColor::class);
     }
 
-    /**
-     * @param array $messages
-     */
     public function export(array $messages): void
     {
         foreach ($messages as $message) {
@@ -112,10 +98,6 @@ class StyleTarget extends AbstractTarget
         }
     }
 
-    /**
-     * @param string $level
-     * @return string
-     */
     private function getLevelColor(string $level): string
     {
         return $this->colorMap[strtolower($level)] ?? 'light_red';
