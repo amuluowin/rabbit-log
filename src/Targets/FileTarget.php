@@ -100,7 +100,7 @@ class FileTarget extends AbstractTarget
             if (empty($logs)) {
                 return;
             }
-            $logs = ArrayHelper::index($logs, null, 'file');
+            $logs = ArrayHelper::index($logs, null, ['file']);
             wgeach($logs, function (string $file, array $msg): void {
                 if ($this->fileMode !== null) {
                     @chmod($file, $this->fileMode);
