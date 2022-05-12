@@ -14,7 +14,7 @@
     "phpunit/phpunit": "*"
   },
   "suggess": {
-    "ext-seaslog": ">=2.1.0 use seaslog",
+    "ext-seaslog": ">=2.1.0 use seaslog"
   },
   "license": "MIT",
   "authors": [
