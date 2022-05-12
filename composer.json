@@ -15,7 +15,6 @@
   },
   "suggess": {
     "ext-seaslog": ">=2.1.0 use seaslog",
-    "ext-rdkafka": "Use rdkafka"
   },
   "license": "MIT",
   "authors": [
