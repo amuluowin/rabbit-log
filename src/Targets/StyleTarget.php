@@ -102,8 +102,4 @@ class StyleTarget extends AbstractTarget
     {
         return $this->colorMap[strtolower($level)] ?? 'light_red';
     }
-
-    protected function write(): void
-    {
-    }
 }

@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Rabbit\Log;
 
-use Rabbit\Log\Targets\AbstractTarget;
-use Rabbit\Base\Contract\InitInterface;
-
 /**
  * Class AbstractConfig
  * @package Rabbit\Log
  */
-abstract class AbstractConfig implements InitInterface
+abstract class AbstractConfig
 {
     protected int $recall_depth = 0;
     protected ?TemplateInterface $userTemplate = null;
@@ -22,13 +19,6 @@ abstract class AbstractConfig implements InitInterface
      */
     public function __construct(protected array $targetList)
     {
-    }
-
-    public function init(): void
-    {
-        foreach ($this->targetList as $target) {
-            $target->init();
-        }
     }
 
     /**

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Rabbit\Log\Targets;
 
-use Rabbit\Base\Contract\InitInterface;
 use Rabbit\Base\Core\Channel;
 
 /**
  * Class AbstractTarget
  * @package rabbit\log\targets
  */
-abstract class AbstractTarget implements InitInterface
+abstract class AbstractTarget
 {
     /** @var string */
     protected string $split = ' | ';
@@ -32,12 +31,6 @@ abstract class AbstractTarget implements InitInterface
     public function __construct(string $split = ' | ')
     {
         $this->split = $split;
-        $this->channel = new Channel();
-    }
-
-    public function init(): void
-    {
-        $this->write();
     }
 
     /**
@@ -64,5 +57,8 @@ abstract class AbstractTarget implements InitInterface
      */
     abstract public function export(array $messages): void;
 
-    abstract protected function write(): void;
+    protected function loop(): void
+    {
+        $this->channel = new Channel();
+    }
 }

@@ -20,6 +20,7 @@ class FileTarget extends AbstractTarget
     private ?int $fileMode = null;
     private int $dirMode = 0775;
     private array $poolList = [];
+    private bool $isRunning = false;
 
     public function __destruct()
     {
@@ -48,7 +49,6 @@ class FileTarget extends AbstractTarget
         }
         $logPath = dirname($this->logFile);
         FileHelper::createDirectory($logPath, $this->dirMode, true);
-        parent::init();
     }
 
     /**
@@ -56,6 +56,7 @@ class FileTarget extends AbstractTarget
      */
     public function export(array $messages): void
     {
+        $this->loop();
         $fileInfo = pathinfo($this->logFile);
         foreach ($messages as $module => $message) {
             if (!empty(pathinfo($module, PATHINFO_EXTENSION))) {
@@ -93,8 +94,13 @@ class FileTarget extends AbstractTarget
     /**
      * @throws NotSupportedException
      */
-    protected function write(): void
+    protected function loop(): void
     {
+        if ($this->isRunning) {
+            return;
+        }
+        $this->isRunning = true;
+        parent::loop();
         loop(function (): void {
             $logs = $this->getLogs();
             if (empty($logs)) {
