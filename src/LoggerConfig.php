@@ -102,7 +102,7 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = $level;
                     break;
                 case '%M':
-                    $msg[] = str_replace($this->split, ' ', $message);
+                    $msg[] = strtr(str_replace($this->split, ' ', $message), $context);
                     break;
                 case '%T':
                     $micsec = in_array($this->isMicrotime, [3, 6]) ? $this->isMicrotime : 3;
@@ -142,12 +142,10 @@ class LoggerConfig extends AbstractConfig
                     break;
                 case '%I':
                     $ips = swoole_get_local_ip();
-                    if (is_array($ips)) {
-                        $ip = current($ips);
-                    } else {
-                        $ip = '127.0.0.1';
+                    if (empty($ips)) {
+                        $ips = [];
                     }
-                    $msg[] = ArrayHelper::getValue($template, $tmp, $ip);
+                    $msg[] = ArrayHelper::getValue($template, $tmp, json_encode($ips));
                     break;
                 case '%F':
                 case '%C':
@@ -172,7 +170,7 @@ class LoggerConfig extends AbstractConfig
         }
         $color = ArrayHelper::getValue($template, '%c');
         $color !== null && $msg['%c'] = $color;
-        $key = $this->appName . '_' . ArrayHelper::getValue($context, 'module', 'system');
+        $key = $this->appName;
         $buffer[$key][] = $msg;
         $this->flush($buffer);
     }
