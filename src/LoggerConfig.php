@@ -141,11 +141,7 @@ class LoggerConfig extends AbstractConfig
                     $msg[] = strtolower(ArrayHelper::getValue($template, $tmp, ArrayHelper::getValue($_SERVER, 'SHELL', 'SHELL')));
                     break;
                 case '%I':
-                    $ips = swoole_get_local_ip();
-                    if (empty($ips)) {
-                        $ips = [];
-                    }
-                    $msg[] = ArrayHelper::getValue($template, $tmp, json_encode($ips));
+                    $msg[] = ArrayHelper::getValue($template, $tmp, current(swoole_get_local_ip()));
                     break;
                 case '%F':
                 case '%C':
