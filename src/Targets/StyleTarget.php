@@ -36,7 +36,7 @@ class StyleTarget extends AbstractTarget
         LogLevel::ERROR => 'red'
     ];
 
-    public function __construct(string $split = ' | ', public bool $useColor = true)
+    public function __construct(string $split = ' | ', public bool $useColor = true, public bool $oneLine = false)
     {
         parent::__construct($split);
         $this->color = create(ConsoleColor::class);
@@ -92,7 +92,11 @@ class StyleTarget extends AbstractTarget
                     }
                 }
                 if (!empty($context)) {
-                    fwrite(STDOUT, implode(' ' . ($this->useColor ? $this->color->apply($this->splitColor, '|') : '|') . ' ', $context) . PHP_EOL);
+                    $str = implode(' ' . ($this->useColor ? $this->color->apply($this->splitColor, '|') : '|') . ' ', $context);
+                    if ($this->oneLine) {
+                        $str = str_replace($str, PHP_EOL, '');
+                    }
+                    fwrite(STDOUT,  $str . PHP_EOL);
                 }
             }
         }
