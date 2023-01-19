@@ -94,7 +94,7 @@ class StyleTarget extends AbstractTarget
                 if (!empty($context)) {
                     $str = implode(' ' . ($this->useColor ? $this->color->apply($this->splitColor, '|') : '|') . ' ', $context);
                     if ($this->oneLine) {
-                        $str = str_replace($str, PHP_EOL, '');
+                        $str = str_replace(PHP_EOL, ' ', $str);
                     }
                     fwrite(STDOUT,  $str . PHP_EOL);
                 }
