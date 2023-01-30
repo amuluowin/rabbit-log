@@ -36,9 +36,8 @@ class StyleTarget extends AbstractTarget
         LogLevel::ERROR => 'red'
     ];
 
-    public function __construct(string $split = ' | ', public bool $useColor = true, public bool $oneLine = false)
+    public function __construct(public string $split = ' | ', public bool $useColor = true, public bool $oneLine = false)
     {
-        parent::__construct($split);
         $this->color = create(ConsoleColor::class);
     }
 
