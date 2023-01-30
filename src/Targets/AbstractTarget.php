@@ -6,44 +6,25 @@ namespace Rabbit\Log\Targets;
 
 use Rabbit\Base\Core\Channel;
 
-/**
- * Class AbstractTarget
- * @package rabbit\log\targets
- */
 abstract class AbstractTarget
 {
-    /** @var string */
-    protected string $split = ' | ';
-    /** @var array */
     protected array $levelList = [];
-    /** @var int */
     protected int $levelIndex = 1;
     protected Channel $channel;
-    /** @var int */
-    protected int $batch = 100;
-    /** @var float */
-    protected float $waitTime = 1;
+    protected int $batch = 0;
+    protected int $waitTime = 1;
+    protected bool $isRunning = false;
 
-    /**
-     * AbstractTarget constructor.
-     * @param string $split
-     */
-    public function __construct(string $split = ' | ')
+    public function __construct(public string $split = ' | ', public bool $oneLine = false)
     {
-        $this->split = $split;
     }
 
-    /**
-     * @param Channel|null $channel
-     * @return array
-     */
     public function getLogs($channel = null): array
     {
         $channel = $channel ?? $this->channel;
         $logs = [];
         for ($i = 0; $i < $this->batch; $i++) {
-            $log = $channel->pop((int)$this->waitTime);
-            if ($log === false) {
+            if (false === $log = $channel->pop($this->waitTime)) {
                 break;
             }
             $logs[] = $log;
@@ -51,14 +32,23 @@ abstract class AbstractTarget
         return $logs;
     }
 
-
-    /**
-     * @param array $messages
-     */
-    abstract public function export(array $messages): void;
+    abstract public function export(array $msg): void;
 
     protected function loop(): void
     {
+        if ($this->isRunning) {
+            return;
+        }
         $this->channel = new Channel();
+        $this->isRunning = true;
+        loop(function (): void {
+            $logs = $this->getLogs();
+            if (empty($logs)) {
+                return;
+            }
+            $this->flush($logs);
+        });
     }
+
+    abstract protected function flush(array|string &$logs): void;
 }

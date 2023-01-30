@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Rabbit\Log\Targets;
 
 use Rabbit\Base\App;
+use Rabbit\Base\Contract\InitInterface;
 use Rabbit\Base\Core\Exception;
 use Rabbit\Base\Helper\FileHelper;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\Base\Helper\StringHelper;
-use Rabbit\Base\Exception\NotSupportedException;
 
-class FileTarget extends AbstractTarget
+class FileTarget extends AbstractTarget implements InitInterface
 {
     private ?string $logFile = null;
     private bool $enableRotation = true;
@@ -20,7 +20,6 @@ class FileTarget extends AbstractTarget
     private ?int $fileMode = null;
     private int $dirMode = 0775;
     private array $poolList = [];
-    private bool $isRunning = false;
 
     public function __destruct()
     {
@@ -91,38 +90,23 @@ class FileTarget extends AbstractTarget
         }
     }
 
-    /**
-     * @throws NotSupportedException
-     */
-    protected function loop(): void
+    protected function flush(array|string &$logs): void
     {
-        if ($this->isRunning) {
-            return;
-        }
-        $this->isRunning = true;
-        parent::loop();
-        loop(function (): void {
-            $logs = $this->getLogs();
-            if (empty($logs)) {
-                return;
+        wgeach($logs, function (string $file, array $msg): void {
+            if ($this->fileMode !== null) {
+                @chmod($file, $this->fileMode);
             }
-            $logs = ArrayHelper::index($logs, null, ['file']);
-            wgeach($logs, function (string $file, array $msg): void {
-                if ($this->fileMode !== null) {
-                    @chmod($file, $this->fileMode);
-                }
-                if ($this->enableRotation) {
-                    clearstatcache();
-                }
-                if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
-                    $this->rotateFiles($file);
-                }
-                $fp = $this->poolList[$file];
-                $msg = array_column($msg, 'msg');
-                @flock($fp, LOCK_EX);
-                @fwrite($fp, implode(PHP_EOL, $msg));
-                @flock($fp, LOCK_UN);
-            });
+            if ($this->enableRotation) {
+                clearstatcache();
+            }
+            if ($this->enableRotation && @filesize($file) > $this->maxFileSize * 1024) {
+                $this->rotateFiles($file);
+            }
+            $fp = $this->poolList[$file];
+            $msg = array_column($msg, 'msg');
+            @flock($fp, LOCK_EX);
+            @fwrite($fp, implode(PHP_EOL, $msg));
+            @flock($fp, LOCK_UN);
         });
     }
 

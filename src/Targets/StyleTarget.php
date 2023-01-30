@@ -42,63 +42,70 @@ class StyleTarget extends AbstractTarget
         $this->color = create(ConsoleColor::class);
     }
 
-    public function export(array $messages): void
+    public function export(array $msg): void
     {
-        foreach ($messages as $message) {
-            foreach ($message as $msg) {
-                if (is_string($msg)) {
-                    switch (ini_get('seaslog.appender')) {
-                        case '2':
-                        case '3':
-                            $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
-                            break;
-                    }
-                    $msg = explode($this->split, trim($msg));
-                    $ranColor = $this->default;
-                } else {
-                    $ranColor = ArrayHelper::remove($msg, '%c');
-                }
-                if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
-                    continue;
-                }
-                if (empty($ranColor)) {
-                    $ranColor = $this->default;
-                } elseif (is_array($ranColor) && count($ranColor) === 2) {
-                    $ranColor = $ranColor[0];
-                } else {
-                    $ranColor = $this->default;
-                }
-                $context = [];
-                foreach ($msg as $index => $m) {
-                    $m = is_string($m) ? trim($m) : (string)$m;
-                    if (isset($this->colorTemplate[$index]) && $this->useColor) {
-                        $color = $this->colorTemplate[$index];
-                        $level = trim($msg[$this->levelIndex]);
-                        switch ($color) {
-                            case self::COLOR_LEVEL:
-                                $context[] = $this->color->apply($this->getLevelColor($level), $m);
-                                break;
-                            case self::COLOR_DEFAULT:
-                                $context[] = $this->color->apply($this->default, $m);
-                                break;
-                            case self::COLOR_RANDOM:
-                                $context[] = $this->color->apply($ranColor, $m);
-                                break;
-                            default:
-                                $context[] = $this->color->apply($color, $m);
-                        }
-                    } else {
-                        $context[] = $this->color->apply($this->default, $m);
-                    }
-                }
-                if (!empty($context)) {
-                    $str = implode(' ' . ($this->useColor ? $this->color->apply($this->splitColor, '|') : '|') . ' ', $context);
-                    if ($this->oneLine) {
-                        $str = str_replace(PHP_EOL, ' ', $str);
-                    }
-                    fwrite(STDOUT,  $str . PHP_EOL);
-                }
+        if (is_string($msg)) {
+            switch (ini_get('seaslog.appender')) {
+                case '2':
+                case '3':
+                    $msg = trim(substr($msg, StringHelper::str_n_pos($msg, ' ', 6)));
+                    break;
             }
+            $msg = explode($this->split, trim($msg));
+            $ranColor = $this->default;
+        } else {
+            $ranColor = ArrayHelper::remove($msg, '%c');
+        }
+        if (!empty($this->levelList) && !in_array(strtolower($msg[$this->levelIndex]), $this->levelList)) {
+            return;
+        }
+        if (empty($ranColor)) {
+            $ranColor = $this->default;
+        } elseif (is_array($ranColor) && count($ranColor) === 2) {
+            $ranColor = $ranColor[0];
+        } else {
+            $ranColor = $this->default;
+        }
+        $context = [];
+        foreach ($msg as $index => $m) {
+            $m = is_string($m) ? trim($m) : (string)$m;
+            if (isset($this->colorTemplate[$index]) && $this->useColor) {
+                $color = $this->colorTemplate[$index];
+                $level = trim($msg[$this->levelIndex]);
+                switch ($color) {
+                    case self::COLOR_LEVEL:
+                        $context[] = $this->color->apply($this->getLevelColor($level), $m);
+                        break;
+                    case self::COLOR_DEFAULT:
+                        $context[] = $this->color->apply($this->default, $m);
+                        break;
+                    case self::COLOR_RANDOM:
+                        $context[] = $this->color->apply($ranColor, $m);
+                        break;
+                    default:
+                        $context[] = $this->color->apply($color, $m);
+                }
+            } else {
+                $context[] = $this->color->apply($this->default, $m);
+            }
+        }
+        if (!empty($context)) {
+            $str = implode(' ' . ($this->useColor ? $this->color->apply($this->splitColor, '|') : '|') . ' ', $context);
+            if ($this->oneLine) {
+                $str = str_replace(PHP_EOL, ' ', $str);
+            }
+            fwrite(STDOUT,  $str . PHP_EOL);
+        }
+    }
+
+    protected function flush(array|string &$logs): void
+    {
+        if (is_array($logs)) {
+            foreach ($logs as &$msg) {
+                fwrite(STDOUT,  $msg . PHP_EOL);
+            }
+        } else {
+            fwrite(STDOUT,  $logs . PHP_EOL);
         }
     }
 

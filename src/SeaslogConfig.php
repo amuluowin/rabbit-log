@@ -66,7 +66,7 @@ class SeaslogConfig extends AbstractConfig implements InitInterface
      * @param array $buffer
      * @throws Throwable
      */
-    public function flush(array $buffer = []): void
+    public function flush(array &$buffer = []): void
     {
         $this->logger->flushBuffer(0);
         foreach ($this->targetList as $target) {

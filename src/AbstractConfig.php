@@ -45,5 +45,5 @@ abstract class AbstractConfig
     /**
      * @param array $buffer
      */
-    abstract public function flush(array $buffer = []): void;
+    abstract public function flush(array &$buffer = []): void;
 }

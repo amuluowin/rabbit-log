@@ -18,8 +18,6 @@ class LoggerConfig extends AbstractConfig
 {
     /** @var string */
     protected string $datetime_format = "Y-m-d H:i:s";
-    /** @var array */
-    protected ?array $template = null;
     /** @var string */
     protected string $split = ' | ';
     /** @var int */
@@ -28,7 +26,6 @@ class LoggerConfig extends AbstractConfig
     private string $appName = 'Rabbit';
     /** @var bool */
     protected bool $useBasename = false;
-    protected bool $realMem = true;
     /** @var array */
     private static array $supportTemplate = [
         '%W',
@@ -46,7 +43,8 @@ class LoggerConfig extends AbstractConfig
         '%F',
         '%U',
         '%u',
-        '%C'
+        '%C',
+        '%n',
     ];
 
     private int $pid = 0;
@@ -61,18 +59,16 @@ class LoggerConfig extends AbstractConfig
      */
     public function __construct(
         protected array $targetList,
-        bool $realMem = true,
-        array $template = ['%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
+        protected bool $realMem = true,
+        protected array $template = ['%n', '%T', '%L', '%R', '%m', '%I', '%Q', '%F', '%U', '%M']
     ) {
         foreach ($template as $tmp) {
             if (!in_array($tmp, self::$supportTemplate)) {
                 throw new InvalidConfigException("$tmp not supported!");
             }
         }
-        $this->template = $template;
-        $this->appName = (string)config('appName', 'Rabbit');
+        $this->appName = (string)config('appName', $this->appName);
         $this->pid = getmypid();
-        $this->realMem = $realMem;
     }
 
     /**
@@ -95,6 +91,9 @@ class LoggerConfig extends AbstractConfig
         $msg = [];
         foreach ($this->template as $tmp) {
             switch ($tmp) {
+                case '%n':
+                    $msg[] = $this->appName;
+                    break;
                 case '%W':
                     $msg[] = ArrayHelper::getValue($template, $tmp, -1);
                     break;
@@ -166,16 +165,14 @@ class LoggerConfig extends AbstractConfig
         }
         $color = ArrayHelper::getValue($template, '%c');
         $color !== null && $msg['%c'] = $color;
-        $key = $this->appName;
-        $buffer[$key][] = $msg;
-        $this->flush($buffer);
+        $this->flush($msg);
     }
 
     /**
      * @param array $buffer
      * @throws Throwable
      */
-    public function flush(array $buffer = []): void
+    public function flush(array &$buffer = []): void
     {
         if (!empty($buffer)) {
             foreach ($this->targetList as $target) {
